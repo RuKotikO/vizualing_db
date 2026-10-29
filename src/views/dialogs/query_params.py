@@ -1,0 +1,216 @@
+from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QLabel, QCheckBox, QComboBox, \
+    QListWidget, QMessageBox
+from PyQt6.QtCore import Qt
+
+
+class QueryParamsDialog(QDialog):
+    """Модальное окно детальной настройки параметров поискового SQL-запроса сторонней БД."""
+
+    def __init__(self, parent_view_data=None, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Параметры запроса")
+        self.resize(750, 480)
+        self.setWindowModality(Qt.WindowModality.ApplicationModal)
+
+        self.schema_metadata = {}
+
+        # Ссылаемся на постоянное хранилище данных в MainWindow, чтобы ничего не сбрасывалось
+        self.query_data = parent_view_data if parent_view_data is not None else {
+            "selected_fields": {},
+            "filters": [],
+            "sort_fields": [],
+            "limit": None,
+            "raw_rules_text": []  # Хранит точные строки для QListWidget
+        }
+
+        main_layout = QHBoxLayout(self)
+
+        # Левая часть
+        left_panel = QVBoxLayout()
+        left_panel.setSpacing(10)
+        left_panel.addWidget(QLabel("<b>Настройка условий</b>"))
+
+        left_panel.addWidget(QLabel("Выберите таблицу:"))
+        self.combo_table = QComboBox()
+        left_panel.addWidget(self.combo_table)
+
+        left_panel.addWidget(QLabel("Выводимое поле (SELECT):"))
+        self.combo_fields = QComboBox()
+        self.combo_fields.addItem("[Не выводить]")
+        left_panel.addWidget(self.combo_fields)
+
+        left_panel.addWidget(QLabel("Фильтр по колонке (WHERE):"))
+        self.combo_filter_col = QComboBox()
+        self.combo_filter_col.addItem("[Без фильтра]")
+        left_panel.addWidget(self.combo_filter_col)
+
+        left_panel.addWidget(QLabel("Оператор:"))
+        self.combo_operator = QComboBox()
+        self.combo_operator.addItems(["=", ">", "<", ">=", "<=", "!=", "LIKE"])
+        left_panel.addWidget(self.combo_operator)
+
+        self.filter_data_input = QLineEdit()
+        self.filter_data_input.setPlaceholderText("Значение фильтра...")
+        left_panel.addWidget(self.filter_data_input)
+
+        left_panel.addWidget(QLabel("Сортировка по полю (ORDER BY):"))
+        self.combo_sort = QComboBox()
+        self.combo_sort.addItem("[Без сортировки]")
+        left_panel.addWidget(self.combo_sort)
+
+        self.limit_input = QLineEdit()
+        self.limit_input.setPlaceholderText("Лимит строк (LIMIT)...")
+        left_panel.addWidget(self.limit_input)
+
+        self.btn_add_rule = QPushButton("Добавить правило")
+        left_panel.addWidget(self.btn_add_rule)
+
+        main_layout.addLayout(left_panel, stretch=1)
+
+        # Правая часть
+        right_panel = QVBoxLayout()
+        right_panel.addWidget(QLabel("<b>Данные запроса (Двойной клик — удалить параметр)</b>"))
+
+        self.rules_list = QListWidget()
+        right_panel.addWidget(self.rules_list)
+
+        # Инициализируем список ранее сохраненными правилами, чтобы они не исчезали!
+        for rule_text in self.query_data["raw_rules_text"]:
+            self.rules_list.addItem(rule_text)
+
+        self.cb_not_condition = QCheckBox("Инвертировать условие (NOT)")
+        right_panel.addWidget(self.cb_not_condition)
+
+        # Добавляем отдельную кнопку удаления выбранного параметра
+        self.btn_delete_rule = QPushButton("Удалить выбранный параметр")
+        self.btn_delete_rule.setObjectName("destructive_btn")
+        right_panel.addWidget(self.btn_delete_rule)
+
+        self.btn_apply = QPushButton("Применить")
+        self.btn_apply.setObjectName("accent_btn")
+        right_panel.addWidget(self.btn_apply)
+
+        main_layout.addLayout(right_panel, stretch=1)
+
+        # Сигналы
+        self.combo_table.currentTextChanged.connect(self.handle_table_changed)
+        self.btn_add_rule.clicked.connect(self.handle_add_rule)
+        self.btn_delete_rule.clicked.connect(self.handle_delete_selected)
+        self.rules_list.itemDoubleClicked.connect(self.handle_delete_selected)  # Удаление по двойному клику
+        self.btn_apply.clicked.connect(self.accept)
+
+    def set_schema_data(self, schema_metadata):
+        self.schema_metadata = schema_metadata
+        self.combo_table.clear()
+        if not schema_metadata:
+            return
+        self.combo_table.addItems(list(schema_metadata.keys()))
+
+    def handle_table_changed(self, table_name):
+        self.combo_fields.clear()
+        self.combo_fields.addItem("[Не выводить]")
+        self.combo_filter_col.clear()
+        self.combo_filter_col.addItem("[Без фильтра]")
+        self.combo_sort.clear()
+        self.combo_sort.addItem("[Без сортировки]")
+
+        if not table_name or table_name not in self.schema_metadata:
+            return
+
+        table_meta = self.schema_metadata[table_name]
+        field_names = [field.name for field in table_meta.fields]
+
+        self.combo_fields.addItems(field_names)
+        self.combo_filter_col.addItems(field_names)
+        self.combo_sort.addItems(field_names)
+
+    def handle_add_rule(self):
+        """Добавляет новое правило в структуру данных и на экран."""
+        table = self.combo_table.currentText()
+        if not table: return
+
+        field = self.combo_fields.currentText()
+        filter_col = self.combo_filter_col.currentText()
+        operator = self.combo_operator.currentText()
+        filter_val = self.filter_data_input.text().strip()
+        sort_col = self.combo_sort.currentText()
+        limit_val = self.limit_input.text().strip()
+
+        # 1. Поля SELECT
+        if field != "[Не выводить]":
+            if table not in self.query_data["selected_fields"]:
+                self.query_data["selected_fields"][table] = []
+            if field not in self.query_data["selected_fields"][table]:
+                self.query_data["selected_fields"][table].append(field)
+                msg = f"➕ Вывести: {table}.{field}"
+                self.rules_list.addItem(msg)
+                self.query_data["raw_rules_text"].append(msg)
+
+        # 2. Фильтры WHERE
+        if filter_col != "[Без фильтра]" and filter_val:
+            val_formatted = f"'{filter_val}'" if not filter_val.isdigit() else filter_val
+            condition = f"{table}.{filter_col} {operator} {val_formatted}"
+            if self.cb_not_condition.isChecked():
+                condition = f"NOT ({condition})"
+
+            if condition not in self.query_data["filters"]:
+                self.query_data["filters"].append(condition)
+                msg = f"🔍 Фильтр: {condition}"
+                self.rules_list.addItem(msg)
+                self.query_data["raw_rules_text"].append(msg)
+                self.filter_data_input.clear()
+
+        # 3. Сортировка ORDER BY
+        if sort_col != "[Без сортировки]":
+            sort_entry = f"{table}.{sort_col}"
+            if sort_entry not in self.query_data["sort_fields"]:
+                self.query_data["sort_fields"].append(sort_entry)
+                msg = f"↕️ Сортировка по: {sort_entry}"
+                self.rules_list.addItem(msg)
+                self.query_data["raw_rules_text"].append(msg)
+
+        # 4. Лимит LIMIT
+        if limit_val and limit_val.isdigit():
+            self.query_data["limit"] = limit_val
+            msg = f"🛑 Лимит строк: {limit_val}"
+            self.rules_list.addItem(msg)
+            self.query_data["raw_rules_text"].append(msg)
+            self.limit_input.clear()
+
+    def handle_delete_selected(self):
+        """Интеллектуальное удаление правила из интерфейса и всех внутренних структур Python."""
+        current_item = self.rules_list.currentItem()
+        if not current_item:
+            return
+
+        text = current_item.text()
+
+        # Удаляем из текстового кеша списка
+        if text in self.query_data["raw_rules_text"]:
+            self.query_data["raw_rules_text"].remove(text)
+
+        # Парсим строку для удаления из соответствующей бизнес-структуры
+        if text.startswith("➕ Вывести: "):
+            clean = text.replace("➕ Вывести: ", "").strip()
+            t_name, f_name = clean.split(".")
+            if t_name in self.query_data["selected_fields"]:
+                if f_name in self.query_data["selected_fields"][t_name]:
+                    self.query_data["selected_fields"][t_name].remove(f_name)
+                if not self.query_data["selected_fields"][t_name]:
+                    del self.query_data["selected_fields"][t_name]
+
+        elif text.startswith("🔍 Фильтр: "):
+            clean = text.replace("🔍 Фильтр: ", "").strip()
+            if clean in self.query_data["filters"]:
+                self.query_data["filters"].remove(clean)
+
+        elif text.startswith("↕️ Сортировка по: "):
+            clean = text.replace("↕️ Сортировка по: ", "").strip()
+            if clean in self.query_data["sort_fields"]:
+                self.query_data["sort_fields"].remove(clean)
+
+        elif text.startswith("🛑 Лимит строк: "):
+            self.query_data["limit"] = None
+
+        # Стираем сам элемент из QListWidget на экране
+        self.rules_list.takeItem(self.rules_list.row(current_item))
