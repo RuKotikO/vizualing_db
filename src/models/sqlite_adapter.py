@@ -142,6 +142,14 @@ class SQLiteAdapter(DatabaseConnector):
         """)
         self.conn.commit()
 
+    def is_user_exists(self, username: str) -> bool:
+        """Проверяет, существует ли уже пользователь с таким именем."""
+        result = self.execute_query(
+            "SELECT id FROM users WHERE user_name = ? LIMIT 1;",
+            (username,)
+        )
+        return len(result) > 0
+
     def register_user(self, username: str, password: str) -> bool:
         try:
             pwd_hash = hashlib.sha256(password.encode()).hexdigest()

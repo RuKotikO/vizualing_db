@@ -51,9 +51,8 @@ class NewConnectionDialog(QDialog):
 
         bottom_row = QHBoxLayout()
 
-        # ДОБАВЛЕНО: Чекбокс сохранения соединения по ГОСТ / ТЗ
         self.cb_save_connection = QCheckBox("Сохранить соединение")
-        self.cb_save_connection.setChecked(True)  # По умолчанию включен
+        self.cb_save_connection.setChecked(True)
         bottom_row.addWidget(self.cb_save_connection)
 
         self.btn_connect = QPushButton("Сохранить")
@@ -64,9 +63,30 @@ class NewConnectionDialog(QDialog):
         self.btn_connect.setObjectName("accent_btn")
         self.btn_connect.clicked.connect(self.handle_save)
 
+        # Подключаем сигнал изменения типа БД к обработчику блокировки полей
+        self.combo_db_type.currentTextChanged.connect(self.toggle_fields_by_db_type)
+
         if self.edit_title:
             self.lbl_header.setText("<h3>Изменение параметров соединения</h3>")
             self.load_existing_data()
+        else:
+            # Вызываем триггер вручную при создании нового окна, чтобы применить логику для дефолтного значения
+            self.toggle_fields_by_db_type(self.combo_db_type.currentText())
+
+    def toggle_fields_by_db_type(self, db_type: str):
+        """Динамически блокирует сетевые поля, если выбрана SQLite."""
+        is_sqlite = (db_type == "SQLite")
+
+        # Если SQLite — выключаем поля, если PostgreSQL — включаем
+        self.host_input.setDisabled(is_sqlite)
+        self.port_input.setDisabled(is_sqlite)
+        self.user_input.setDisabled(is_sqlite)
+
+        # Очищаем заблокированные поля для аккуратности
+        if is_sqlite:
+            self.host_input.clear()
+            self.port_input.clear()
+            self.user_input.clear()
 
     def load_existing_data(self):
         query = "SELECT db_type, host, port, db_name, db_user, save_password FROM connections WHERE title = ? LIMIT 1;"
@@ -80,6 +100,8 @@ class NewConnectionDialog(QDialog):
             self.db_name_input.setText(db_name)
             self.user_input.setText(db_user)
             self.cb_save_connection.setChecked(bool(save_pwd))
+            # Принудительно обновляем состояние полей после загрузки данных
+            self.toggle_fields_by_db_type(db_type)
 
     def handle_save(self):
         t = self.title_input.text().strip()
@@ -98,7 +120,6 @@ class NewConnectionDialog(QDialog):
         port = int(p) if p else 5432
 
         if self.edit_title:
-            # Обновляем запись с учетом флага save_password
             try:
                 self.db_adapter.execute_query(
                     """UPDATE connections 
@@ -110,7 +131,6 @@ class NewConnectionDialog(QDialog):
             except Exception:
                 success = False
         else:
-            # Создаем новую запись
             try:
                 self.db_adapter.execute_query(
                     """INSERT INTO connections (title, user_id, db_type, host, port, db_name, db_user, save_password) 

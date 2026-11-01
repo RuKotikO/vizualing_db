@@ -87,8 +87,38 @@ class RegDialog(QDialog):
         self.btn_register.clicked.connect(self.handle_registration)
 
     def handle_registration(self):
-        u, p, pr = self.login_input.text().strip(), self.password_input.text(), self.password_repeat_input.text()
-        if p != pr: return
+        u = self.login_input.text().strip()
+        p = self.password_input.text()
+        pr = self.password_repeat_input.text()
+
+        # 1. Проверка на заполнение всех полей
+        if not u or not p or not pr:
+            QMessageBox.warning(self, "Внимание", "Заполните все поля!")
+            return
+
+        # 2. Проверка длины логина (не менее 3 символов)
+        if len(u) < 3:
+            QMessageBox.warning(self, "Ошибка валидации", "Имя пользователя должно содержать не менее 3 символов!")
+            return
+
+        # 3. ПРОВЕРКА ДЛИНЫ ПАРОЛЯ (не менее 6 символов)
+        if len(p) < 6:
+            QMessageBox.warning(self, "Ошибка валидации", "Пароль должен быть не менее 6 символов!")
+            return
+
+        # 4. Проверка совпадения паролей
+        if p != pr:
+            QMessageBox.critical(self, "Ошибка", "Пароли не совпадают!")
+            return
+
+        # 5. Проверка существования пользователя в БД
+        if self.db_adapter.is_user_exists(u):
+            QMessageBox.warning(self, "Ошибка регистрации", f"Пользователь с логином '{u}' уже существует!")
+            return
+
+        # 6. Попытка регистрации
         if self.db_adapter.register_user(u, p):
             QMessageBox.information(self, "Успех", "Регистрация успешна!")
             self.accept()
+        else:
+            QMessageBox.critical(self, "Ошибка", "Не удалось зарегистрировать пользователя. Попробуйте другое имя.")

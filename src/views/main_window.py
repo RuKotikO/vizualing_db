@@ -295,16 +295,14 @@ class MainWindow(QMainWindow):
         """Безопасное извлечение параметров и динамическое подключение к СУБД."""
         text = item.text()
 
-        # Универсальный парсинг имени (работает и для истории со скобками, и для чистых названий)
         clean_text = text.replace("🔌 ", "").strip()
         if "(" in clean_text:
             title = clean_text.split("(")[0].strip()
         else:
             title = clean_text
 
-        # ПРОВЕРКА НА АКТИВНОЕ СОЕДИНЕНИЕ: Выводим окно подтверждения
-        if self.controller.active_connector and self.controller.active_connector.conn:
-            # Если пользователь кликнул на уже ТЕКУЩУЮ активную базу, ничего не делаем
+        # ПРОВЕРКА НА АКТИВНОЕ СОЕДИНЕНИЕ: Добавлена безопасность к self.controller
+        if self.controller and self.controller.active_connector and self.controller.active_connector.conn:
             if title in self.lbl_connection_status.text():
                 return
 
@@ -318,14 +316,13 @@ class MainWindow(QMainWindow):
                 self.saved_list.clearSelection()
                 return
 
-        # Принудительно очищаем прошлый SQL-запрос при одобренном переключении
         self.clear_current_query_data()
 
         query = "SELECT db_type, host, port, db_name, db_user FROM connections WHERE title = ? LIMIT 1;"
         res_list = self.db_adapter.execute_query(query, (title,))
 
         if not res_list:
-            QMessageBox.warning(self, "Внимание", f"Профиль '{title}' не найден в локальной БД!")
+            QMessageBox.warning(self, "Внимание", f"Профиль '{title}' не найден in локальной БД!")
             return
 
         row = res_list[0]
@@ -357,7 +354,8 @@ class MainWindow(QMainWindow):
 
         if success:
             self.lbl_connection_status.setText(f"🔌 Активная база данных [{db_type}]: {db_name} (Профиль: {title})")
-            self.db_adapter.log_message("INFO", f"Пользователь переключился на БД {db_name} ({db_type})")
+            if self.db_adapter:
+                self.db_adapter.log_message("INFO", f"Пользователь переключился на БД {db_name} ({db_type})")
 
             if self.scene.cards:
                 first_card = list(self.scene.cards.values())[0]
@@ -367,15 +365,26 @@ class MainWindow(QMainWindow):
 
     def handle_disconnect(self):
         """Безопасно разрывает сетевое соединение со сторонней БД и очищает холст."""
-        self.controller.active_connector.disconnect()
+        # ПРОВЕРКА: Если контроллер или коннектор отсутствуют/уже отключены
+        if not self.controller or not self.controller.active_connector:
+            QMessageBox.critical(self, "Внимание",
+                                    "Активное подключение к базе данных отсутствует. Нечего отключать!")
+            return
+
+        try:
+            self.controller.active_connector.disconnect()
+        except Exception as e:
+            print(f"Ошибка при закрытии соединения: {e}")
+
         self.controller.active_metadata.clear()
         self.scene.clear_canvas()
 
-        # Используем универсальный метод очистки
+        # Универсальный метод очистки
         self.clear_current_query_data()
 
         self.lbl_connection_status.setText("Отключено от сторонней СУБД. Холст очищен.")
-        self.db_adapter.log_message("INFO", "Пользователь вручную разорвал сетевое соединение")
+        if self.db_adapter:
+            self.db_adapter.log_message("INFO", "Пользователь вручную разорвал сетевое соединение")
 
     def handle_refresh_schema(self):
         """Повторно вычитывает системные каталоги СУБД и перерисовывает схему."""
@@ -396,14 +405,12 @@ class MainWindow(QMainWindow):
 
     def handle_delete_connection(self):
         """Удаляет выбранное в сайдбаре подключение (из Истории или Сохранённых) из локальной БД."""
-        # 1. Автоматически определяем, в каком списке сейчас есть выделенный элемент
         active_list = None
         if self.history_list.currentItem() is not None:
             active_list = self.history_list
         elif self.saved_list.currentItem() is not None:
             active_list = self.saved_list
 
-        # Если ни один элемент ни в одном списке не выбран
         if not active_list:
             QMessageBox.warning(self, "Внимание",
                                 "Выберите профиль подключения из списка Истории или Сохранённых для удаления!")
@@ -412,7 +419,6 @@ class MainWindow(QMainWindow):
         current_item = active_list.currentItem()
         text = current_item.text()
 
-        # 2. Надежный парсинг имени профиля (для Истории со скобками и для чистых Сохраненных)
         clean_text = text.replace("🔌 ", "").strip()
         if "(" in clean_text:
             title = clean_text.split("(")[0].strip()
@@ -425,26 +431,24 @@ class MainWindow(QMainWindow):
         )
 
         if reply == QMessageBox.StandardButton.Yes:
-            # 3. Удаляем профиль из локальной базы данных SQLite
             if self.db_adapter.delete_connection_profile(title):
                 current_status = self.lbl_connection_status.text()
 
-                # Если мы удаляем ту базу, к которой сейчас подключены — сбрасываем холст
+                # Если удаляем ту базу, к которой сейчас подключены — сбрасываем холст
                 if title in current_status:
-                    if self.controller.active_connector is not None:
+                    # ИСПРАВЛЕНО: Безопасный вызов отключения с проверкой существования коннектора
+                    if self.controller and self.controller.active_connector:
                         try:
                             self.handle_disconnect()
                         except Exception:
                             pass
                     else:
                         self.scene.clear_canvas()
+                        self.clear_current_query_data()
                         self.lbl_connection_status.setText("Профиль удален. Холст очищен.")
 
-                # 4. Сбрасываем выделение в обоих списках сайдбара
                 self.history_list.clearSelection()
                 self.saved_list.clearSelection()
-
-                # 5. Полностью обновляем списки интерфейса на основе актуальных данных из БД
                 self.refresh_connection_history()
 
                 QMessageBox.information(self, "Успех", f"Профиль '{title}' успешно удален.")
