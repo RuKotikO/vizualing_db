@@ -580,17 +580,12 @@ class MainWindow(QMainWindow):
             self.handle_toggle_links(self.cb_links.checkState().value)
             return
 
-        # Проходим по всем карточкам на холсте
         for t_name, card in self.scene.cards.items():
-            # Если имя таблицы содержит поисковый запрос — оставляем её видимой
             if search_text in t_name.lower():
                 card.setVisible(True)
             else:
-                # Если совпадений нет — скрываем карточку с экрана
                 card.setVisible(False)
 
-        # Автоматически обновляем видимость линий связи:
-        # линия должна быть видна только если видны ОБЕ соединяемые таблицы
         for line in self.scene.lines:
             if line.from_card.isVisible() and line.to_card.isVisible() and self.cb_links.isChecked():
                 line.setVisible(True)
@@ -607,33 +602,27 @@ class MainWindow(QMainWindow):
             return
 
 
-        # 1. Запрашиваем у пользователя путь для сохранения файла
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Экспорт диаграммы структуры БД", "db_schema_export.png", "Изображения (*.png)"
         )
 
         if not file_path:
-            return  # Пользователь отменил сохранение
+            return
 
         try:
-            # 2. Вычисляем точные границы (Rect) всех объектов на графической сцене
             items_rect = self.scene.itemsBoundingRect()
 
-            # Добавляем небольшие поля (отступы в 20 пикселей), чтобы карточки не прижимались к краям
             items_rect.adjust(-20, -20, 20, 20)
 
-            # 3. Инициализируем пустой холст пикселей (Pixmap) нужного размера
             pixmap = QPixmap(int(items_rect.width()), int(items_rect.height()))
             # Заливаем фон белым цветом (как в QGraphicsView)
             pixmap.fill(Qt.GlobalColor.white)
 
-            # 4. Направляем QPainter на созданный Pixmap и принудительно отрисовываем туда сцену
             painter = QPainter(pixmap)
             painter.setRenderHint(QPainter.RenderHint.Antialiasing)
             self.scene.render(painter, QRectF(pixmap.rect()), items_rect)
             painter.end()
 
-            # 5. Сохраняем итоговый файл на диск
             if pixmap.save(file_path, "PNG"):
                 QMessageBox.information(self, "Успех",
                                         f"Диаграмма структуры успешно экспортирована в файл:\n{file_path}")
@@ -654,7 +643,6 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Внимание", "В таблице результатов нет данных для выгрузки!")
             return
 
-        # 1. Запрашиваем у пользователя формат и путь сохранения
         file_path, selected_filter = QFileDialog.getSaveFileName(
             self, "Выгрузка данных выборки", "exported_data.csv",
             "Таблица CSV (*.csv);;Документ JSON (*.json)"
@@ -664,32 +652,25 @@ class MainWindow(QMainWindow):
             return
 
         try:
-            # 2. Собираем названия заголовков столбцов из модели
             headers = [model.headerData(c, Qt.Orientation.Horizontal) for c in range(model.columnCount())]
-
-            # 3. Собираем массив строк данных
             data_rows = [[model.item(r, c).text() if model.item(r, c) else "" for c in range(model.columnCount())] for r
                          in range(model.rowCount())]
 
-            # 4. Логика сохранения в зависимости от выбранного расширения файла
             if file_path.endswith(".json") or "JSON" in selected_filter:
-                # Формируем массив словарей для JSON
                 json_data = [dict(zip(headers, row)) for row in data_rows]
 
                 with open(file_path, "w", encoding="utf-8") as f:
                     json.dump(json_data, f, ensure_ascii=False, indent=4)
 
-                # ИСПРАВЛЕНО: Прерываем выполнение метода, чтобы не перезаписывать в CSV!
                 QMessageBox.information(self, "Успех", f"Данные успешно выгружены в формате JSON:\n{file_path}")
                 if self.db_adapter:
                     self.db_adapter.log_message("INFO", f"Выгружены данные выборки в JSON: {file_path}")
                 return
 
-            # 5. Выгрузка в формат CSV (выполняется, только если не сработал JSON)
             with open(file_path, "w", newline="", encoding="utf-8-sig") as f:
                 writer = csv.writer(f, delimiter=";")
-                writer.writerow(headers)  # Пишем строку заголовков
-                writer.writerows(data_rows)  # Пишем все строки данных
+                writer.writerow(headers)
+                writer.writerows(data_rows)
 
             QMessageBox.information(self, "Успех", f"Данные успешно выгружены в формате CSV:\n{file_path}")
             if self.db_adapter:
