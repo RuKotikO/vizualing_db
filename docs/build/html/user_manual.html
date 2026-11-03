@@ -1,0 +1,161 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ru" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Руководство пользователя (User Manual) &mdash; документация DBSchemaVisualizer </title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=372fde1a"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="_static/translations.js?v=cd1d70c9"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Алфавитный указатель" href="genindex.html" />
+    <link rel="search" title="Поиск" href="search.html" />
+    <link rel="next" title="Руководство разработчика (Developer Manual)" href="developer_manual.html" />
+    <link rel="prev" title="Визуализатор БД — DBSchemaVisualizer" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            DBSchemaVisualizer
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Поиск в документации" aria-label="Поиск в документации" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Меню навигации">
+              <p class="caption" role="heading"><span class="caption-text">Руководство пользователя:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Руководство пользователя (User Manual)</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id1">Установка и первый запуск</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id2">Начало работы</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id3">Работа с интерактивным холстом</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id4">Визуальный конструктор запросов</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Руководство разработчика и API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="developer_manual.html">Руководство разработчика (Developer Manual)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Меню навигации для мобильных устройств" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">DBSchemaVisualizer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Навигация по страницам">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Руководство пользователя (User Manual)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/user_manual.rst.txt" rel="nofollow"> Просмотреть исходный код страницы</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="user-manual">
+<h1>Руководство пользователя (User Manual)<a class="headerlink" href="#user-manual" title="Ссылка на этот заголовок"></a></h1>
+<section id="id1">
+<h2>Установка и первый запуск<a class="headerlink" href="#id1" title="Ссылка на этот заголовок"></a></h2>
+<ol class="arabic simple">
+<li><p>Запустите файл установщика <code class="docutils literal notranslate"><span class="pre">DBSchemaVisualizer_Setup.exe</span></code>.</p></li>
+<li><p>В появившемся окне мастера установки вы можете выбрать любой удобный путь для размещения программы.</p></li>
+<li><p>По умолчанию инсталлятор предлагает базовый общесистемный путь:
+<code class="docutils literal notranslate"><span class="pre">C:\Program</span> <span class="pre">Files\DBSchemaVisualizer\</span></code></p></li>
+<li><p>Дождитесь завершения копирования файлов и запустите приложение с помощью ярлыка на Рабочем столе.</p></li>
+</ol>
+</section>
+<section id="id2">
+<h2>Начало работы<a class="headerlink" href="#id2" title="Ссылка на этот заголовок"></a></h2>
+<ol class="arabic simple">
+<li><p><strong>Авторизация</strong>: При старте приложения пройдите регистрацию или войдите под существующей учетной записью.</p></li>
+<li><p><strong>Создание подключения</strong>: Нажмите кнопку <cite>+ Создать соединение</cite> в левой панели.</p></li>
+<li><p><strong>Выбор СУБД</strong>:
+* Для <strong>PostgreSQL</strong> введите хост, порт, имя базы данных и данные пользователя.
+* Для <strong>SQLite</strong> укажите путь к файлу базы данных (кавычки будут удалены автоматически).</p></li>
+<li><p>Нажмите <cite>Сохранить</cite>, чтобы профиль зафиксировался в истории и системной папке <code class="docutils literal notranslate"><span class="pre">AppData</span></code>.</p></li>
+</ol>
+</section>
+<section id="id3">
+<h2>Работа с интерактивным холстом<a class="headerlink" href="#id3" title="Ссылка на этот заголовок"></a></h2>
+<ul class="simple">
+<li><p><strong>Навигация</strong>: Зажмите левую кнопку мыши на пустом пространстве холста для перемещения (ScrollHand).</p></li>
+<li><p><strong>Горизонтальный скролл</strong>: Зажмите клавишу <code class="docutils literal notranslate"><span class="pre">Shift</span></code> и крутите колесико мыши для смещения влево/вправо.</p></li>
+<li><p><strong>Масштабирование</strong>: Зажмите клавишу <code class="docutils literal notranslate"><span class="pre">Ctrl</span></code> и крутите колесико мыши для приближения/удаления.</p></li>
+<li><p><strong>Перетаскивание таблиц</strong>: Любую карточку таблицы можно свободно перемещать мышью — линии связей FOREIGN KEY перерисуются автоматически под углами 90 градусов.</p></li>
+</ul>
+</section>
+<section id="id4">
+<h2>Визуальный конструктор запросов<a class="headerlink" href="#id4" title="Ссылка на этот заголовок"></a></h2>
+<ol class="arabic simple">
+<li><p>Нажмите кнопку <cite>Параметры</cite> над полем SQL-запроса.</p></li>
+<li><p>Выберите таблицу и поле для вывода (SELECT). Опция <code class="docutils literal notranslate"><span class="pre">*</span> <span class="pre">[Выбрать</span> <span class="pre">все</span> <span class="pre">поля]</span></code> автоматически подставит маску выборки для всей таблицы.</p></li>
+<li><p>Добавьте условия фильтрации (WHERE), выберите поля сортировки (ORDER BY) или лимит строк (LIMIT).</p></li>
+<li><p>Нажмите <cite>Добавить правило</cite>, а затем <cite>Применить</cite>.</p></li>
+<li><p>Нажмите <cite>Выполнить</cite> на главной панели для отображения данных в таблице результатов.</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Нижняя область">
+        <a href="index.html" class="btn btn-neutral float-left" title="Визуализатор БД — DBSchemaVisualizer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Предыдущая</a>
+        <a href="developer_manual.html" class="btn btn-neutral float-right" title="Руководство разработчика (Developer Manual)" accesskey="n" rel="next">Следующая <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Авторские права 2026, Роман. </p>
+  </div>
+
+  Собрано при помощи <a href="https://www.sphinx-doc.org/">Sphinx</a> с использованием
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">темы,</a>
+    предоставленной <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

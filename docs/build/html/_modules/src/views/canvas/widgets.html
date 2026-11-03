@@ -1,0 +1,239 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ru" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.views.canvas.widgets &mdash; документация DBSchemaVisualizer </title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=372fde1a"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../../_static/translations.js?v=cd1d70c9"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Алфавитный указатель" href="../../../../genindex.html" />
+    <link rel="search" title="Поиск" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            DBSchemaVisualizer
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Поиск в документации" aria-label="Поиск в документации" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Меню навигации">
+              <p class="caption" role="heading"><span class="caption-text">Руководство пользователя:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_manual.html">Руководство пользователя (User Manual)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Руководство разработчика и API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../developer_manual.html">Руководство разработчика (Developer Manual)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Меню навигации для мобильных устройств" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">DBSchemaVisualizer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Навигация по страницам">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Код модуля</a></li>
+      <li class="breadcrumb-item active">src.views.canvas.widgets</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Исходный код src.views.canvas.widgets</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6.QtWidgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">QGraphicsRectItem</span><span class="p">,</span> <span class="n">QGraphicsItem</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6.QtCore</span><span class="w"> </span><span class="kn">import</span> <span class="n">QRectF</span><span class="p">,</span> <span class="n">QPointF</span><span class="p">,</span> <span class="n">Qt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6.QtGui</span><span class="w"> </span><span class="kn">import</span> <span class="n">QBrush</span><span class="p">,</span> <span class="n">QColor</span><span class="p">,</span> <span class="n">QPen</span><span class="p">,</span> <span class="n">QFont</span>
+
+
+<div class="viewcode-block" id="TableCardWidget">
+<a class="viewcode-back" href="../../../../src.views.canvas.widgets.html#src.views.canvas.widgets.TableCardWidget">[документация]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">TableCardWidget</span><span class="p">(</span><span class="n">QGraphicsRectItem</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Графический виджет карточки таблицы базы данных."""</span>
+<div class="viewcode-block" id="TableCardWidget.__init__">
+<a class="viewcode-back" href="../../../../src.views.canvas.widgets.html#src.views.canvas.widgets.TableCardWidget.__init__">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_metadata</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Инициализирует карточку таблицы и формирует список её полей."""</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span> <span class="o">=</span> <span class="n">table_metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">table_metadata</span><span class="o">.</span><span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relations</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">show_types</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">=</span> <span class="mi">240</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">header_height</span> <span class="o">=</span> <span class="mi">36</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">row_height</span> <span class="o">=</span> <span class="mi">28</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">header_height</span> <span class="o">+</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">table_metadata</span><span class="o">.</span><span class="n">fields</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_height</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">setRect</span><span class="p">(</span><span class="n">QRectF</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setPos</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">setFlags</span><span class="p">(</span>
+            <span class="n">QGraphicsItem</span><span class="o">.</span><span class="n">GraphicsItemFlag</span><span class="o">.</span><span class="n">ItemIsMovable</span> <span class="o">|</span>
+            <span class="n">QGraphicsItem</span><span class="o">.</span><span class="n">GraphicsItemFlag</span><span class="o">.</span><span class="n">ItemSendsGeometryChanges</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TableCardWidget.get_field_edge_points">
+<a class="viewcode-back" href="../../../../src.views.canvas.widgets.html#src.views.canvas.widgets.TableCardWidget.get_field_edge_points">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_field_edge_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">field_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">QPointF</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        ИСПРАВЛЕНО: Рассчитывает абсолютно точные мировые координаты левой и правой</span>
+<span class="sd">        границ конкретной строки (ячейки) таблицы для аккуратного подведения линий связей.</span>
+<span class="sd">        """</span>
+        <span class="n">current_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">header_height</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">field_name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="n">center_y_in_card</span> <span class="o">=</span> <span class="n">current_y</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">row_height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="k">return</span> <span class="p">{</span>
+                    <span class="s2">"left"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">scenePos</span><span class="p">()</span> <span class="o">+</span> <span class="n">QPointF</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">center_y_in_card</span><span class="p">),</span>
+                    <span class="s2">"right"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">scenePos</span><span class="p">()</span> <span class="o">+</span> <span class="n">QPointF</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">center_y_in_card</span><span class="p">)</span>
+                <span class="p">}</span>
+            <span class="n">current_y</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_height</span>
+
+        <span class="n">fallback_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">header_height</span> <span class="o">+</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">row_height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">"left"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">scenePos</span><span class="p">()</span> <span class="o">+</span> <span class="n">QPointF</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">fallback_y</span><span class="p">),</span>
+            <span class="s2">"right"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">scenePos</span><span class="p">()</span> <span class="o">+</span> <span class="n">QPointF</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">fallback_y</span><span class="p">)</span>
+        <span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="TableCardWidget.paint">
+<a class="viewcode-back" href="../../../../src.views.canvas.widgets.html#src.views.canvas.widgets.TableCardWidget.paint">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">paint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">painter</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="n">widget</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Отрисовывает внутренний интерфейс карточки таблицы."""</span>
+        <span class="n">card_rect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rect</span><span class="p">()</span>
+        <span class="n">painter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">QPen</span><span class="p">(</span><span class="n">QColor</span><span class="p">(</span><span class="s2">"#475569"</span><span class="p">),</span> <span class="mf">1.5</span><span class="p">))</span>
+        <span class="n">painter</span><span class="o">.</span><span class="n">setBrush</span><span class="p">(</span><span class="n">QBrush</span><span class="p">(</span><span class="n">QColor</span><span class="p">(</span><span class="s2">"#1E293B"</span><span class="p">)))</span>
+        <span class="n">painter</span><span class="o">.</span><span class="n">drawRoundedRect</span><span class="p">(</span><span class="n">card_rect</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+
+        <span class="n">header_rect</span> <span class="o">=</span> <span class="n">QRectF</span><span class="p">(</span><span class="n">card_rect</span><span class="o">.</span><span class="n">x</span><span class="p">(),</span> <span class="n">card_rect</span><span class="o">.</span><span class="n">y</span><span class="p">(),</span> <span class="n">card_rect</span><span class="o">.</span><span class="n">width</span><span class="p">(),</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header_height</span><span class="p">))</span>
+        <span class="n">painter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">PenStyle</span><span class="o">.</span><span class="n">NoPen</span><span class="p">)</span>
+        <span class="n">painter</span><span class="o">.</span><span class="n">setBrush</span><span class="p">(</span><span class="n">QBrush</span><span class="p">(</span><span class="n">QColor</span><span class="p">(</span><span class="s2">"#334155"</span><span class="p">)))</span>
+        <span class="n">painter</span><span class="o">.</span><span class="n">drawRoundedRect</span><span class="p">(</span><span class="n">header_rect</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+        <span class="n">painter</span><span class="o">.</span><span class="n">drawRect</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">card_rect</span><span class="o">.</span><span class="n">x</span><span class="p">()),</span> <span class="nb">int</span><span class="p">(</span><span class="n">card_rect</span><span class="o">.</span><span class="n">y</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">header_height</span> <span class="o">-</span> <span class="mi">6</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">card_rect</span><span class="o">.</span><span class="n">width</span><span class="p">()),</span> <span class="mi">6</span><span class="p">)</span>
+
+        <span class="n">painter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">QPen</span><span class="p">(</span><span class="n">QColor</span><span class="p">(</span><span class="s2">"#475569"</span><span class="p">),</span> <span class="mf">1.5</span><span class="p">))</span>
+        <span class="n">painter</span><span class="o">.</span><span class="n">drawLine</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">card_rect</span><span class="o">.</span><span class="n">x</span><span class="p">()),</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header_height</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">card_rect</span><span class="o">.</span><span class="n">x</span><span class="p">()</span> <span class="o">+</span> <span class="n">card_rect</span><span class="o">.</span><span class="n">width</span><span class="p">()),</span>
+                         <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header_height</span><span class="p">))</span>
+
+        <span class="n">painter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">QColor</span><span class="p">(</span><span class="s2">"#F8FAFC"</span><span class="p">))</span>
+        <span class="n">painter</span><span class="o">.</span><span class="n">setFont</span><span class="p">(</span><span class="n">QFont</span><span class="p">(</span><span class="s2">"Segoe UI"</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="n">QFont</span><span class="o">.</span><span class="n">Weight</span><span class="o">.</span><span class="n">Bold</span><span class="p">))</span>
+        <span class="n">painter</span><span class="o">.</span><span class="n">drawText</span><span class="p">(</span><span class="n">header_rect</span><span class="o">.</span><span class="n">adjusted</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">12</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                         <span class="nb">int</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignmentFlag</span><span class="o">.</span><span class="n">AlignVCenter</span> <span class="o">|</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignmentFlag</span><span class="o">.</span><span class="n">AlignLeft</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+        <span class="n">current_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">header_height</span>
+        <span class="n">font_field</span> <span class="o">=</span> <span class="n">QFont</span><span class="p">(</span><span class="s2">"Segoe UI"</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">current_y</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">header_height</span><span class="p">:</span>
+                <span class="n">painter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">QPen</span><span class="p">(</span><span class="n">QColor</span><span class="p">(</span><span class="s2">"#334155"</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">Qt</span><span class="o">.</span><span class="n">PenStyle</span><span class="o">.</span><span class="n">DashLine</span><span class="p">))</span>
+                <span class="n">painter</span><span class="o">.</span><span class="n">drawLine</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">card_rect</span><span class="o">.</span><span class="n">x</span><span class="p">()),</span> <span class="nb">int</span><span class="p">(</span><span class="n">current_y</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">card_rect</span><span class="o">.</span><span class="n">x</span><span class="p">()</span> <span class="o">+</span> <span class="n">card_rect</span><span class="o">.</span><span class="n">width</span><span class="p">()),</span>
+                                 <span class="nb">int</span><span class="p">(</span><span class="n">current_y</span><span class="p">))</span>
+
+            <span class="n">text_x_offset</span> <span class="o">=</span> <span class="mi">12</span>
+            <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">is_pk</span><span class="p">:</span>
+                <span class="n">painter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">QColor</span><span class="p">(</span><span class="s2">"#EAB308"</span><span class="p">))</span>
+                <span class="n">painter</span><span class="o">.</span><span class="n">setFont</span><span class="p">(</span><span class="n">QFont</span><span class="p">(</span><span class="s2">"Segoe UI"</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="n">QFont</span><span class="o">.</span><span class="n">Weight</span><span class="o">.</span><span class="n">Bold</span><span class="p">))</span>
+                <span class="n">painter</span><span class="o">.</span><span class="n">drawText</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">card_rect</span><span class="o">.</span><span class="n">x</span><span class="p">()</span> <span class="o">+</span> <span class="n">text_x_offset</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">current_y</span> <span class="o">+</span> <span class="mi">18</span><span class="p">),</span> <span class="s2">"[PK]"</span><span class="p">)</span>
+                <span class="n">text_x_offset</span> <span class="o">+=</span> <span class="mi">32</span>
+            <span class="k">elif</span> <span class="n">field</span><span class="o">.</span><span class="n">is_fk</span><span class="p">:</span>
+                <span class="n">painter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">QColor</span><span class="p">(</span><span class="s2">"#94A3B8"</span><span class="p">))</span>
+                <span class="n">painter</span><span class="o">.</span><span class="n">setFont</span><span class="p">(</span><span class="n">QFont</span><span class="p">(</span><span class="s2">"Segoe UI"</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="n">QFont</span><span class="o">.</span><span class="n">Weight</span><span class="o">.</span><span class="n">Bold</span><span class="p">))</span>
+                <span class="n">painter</span><span class="o">.</span><span class="n">drawText</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">card_rect</span><span class="o">.</span><span class="n">x</span><span class="p">()</span> <span class="o">+</span> <span class="n">text_x_offset</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">current_y</span> <span class="o">+</span> <span class="mi">18</span><span class="p">),</span> <span class="s2">"[FK]"</span><span class="p">)</span>
+                <span class="n">text_x_offset</span> <span class="o">+=</span> <span class="mi">32</span>
+
+            <span class="n">painter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">QColor</span><span class="p">(</span><span class="s2">"#F8FAFC"</span><span class="p">))</span>
+            <span class="n">painter</span><span class="o">.</span><span class="n">setFont</span><span class="p">(</span><span class="n">font_field</span><span class="p">)</span>
+            <span class="n">painter</span><span class="o">.</span><span class="n">drawText</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">card_rect</span><span class="o">.</span><span class="n">x</span><span class="p">()</span> <span class="o">+</span> <span class="n">text_x_offset</span><span class="p">),</span> <span class="nb">int</span><span class="p">(</span><span class="n">current_y</span> <span class="o">+</span> <span class="mi">18</span><span class="p">),</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">show_types</span><span class="p">:</span>
+                <span class="n">painter</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">QColor</span><span class="p">(</span><span class="s2">"#64748B"</span><span class="p">))</span>
+                <span class="n">type_rect</span> <span class="o">=</span> <span class="n">QRectF</span><span class="p">(</span><span class="n">card_rect</span><span class="o">.</span><span class="n">x</span><span class="p">(),</span> <span class="nb">float</span><span class="p">(</span><span class="n">current_y</span><span class="p">),</span> <span class="n">card_rect</span><span class="o">.</span><span class="n">width</span><span class="p">()</span> <span class="o">-</span> <span class="mi">12</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">row_height</span><span class="p">))</span>
+                <span class="n">painter</span><span class="o">.</span><span class="n">drawText</span><span class="p">(</span><span class="n">type_rect</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignmentFlag</span><span class="o">.</span><span class="n">AlignVCenter</span> <span class="o">|</span> <span class="n">Qt</span><span class="o">.</span><span class="n">AlignmentFlag</span><span class="o">.</span><span class="n">AlignRight</span><span class="p">),</span>
+                                 <span class="n">field</span><span class="o">.</span><span class="n">data_type</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+
+            <span class="n">current_y</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_height</span></div>
+
+
+<div class="viewcode-block" id="TableCardWidget.add_relation">
+<a class="viewcode-back" href="../../../../src.views.canvas.widgets.html#src.views.canvas.widgets.TableCardWidget.add_relation">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">add_relation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">relation_line</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Регистрирует объект линии связи, подключенной к данной таблице."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">relation_line</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TableCardWidget.itemChange">
+<a class="viewcode-back" href="../../../../src.views.canvas.widgets.html#src.views.canvas.widgets.TableCardWidget.itemChange">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">itemChange</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">change</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">change</span> <span class="o">==</span> <span class="n">QGraphicsItem</span><span class="o">.</span><span class="n">GraphicsItemChange</span><span class="o">.</span><span class="n">ItemPositionChange</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">relation</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">relations</span><span class="p">:</span>
+                <span class="n">relation</span><span class="o">.</span><span class="n">update_position</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">itemChange</span><span class="p">(</span><span class="n">change</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Авторские права 2026, Роман. </p>
+  </div>
+
+  Собрано при помощи <a href="https://www.sphinx-doc.org/">Sphinx</a> с использованием
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">темы,</a>
+    предоставленной <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

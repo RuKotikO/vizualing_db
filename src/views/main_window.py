@@ -17,7 +17,9 @@ from src.views.dialogs.connection import NewConnectionDialog
 from src.views.canvas.scene import DatabaseCanvasScene
 
 class MainWindow(QMainWindow):
+    """Главное окно визуализатора DBSchemaVisualizer."""
     def __init__(self):
+        """Инициализирует элементы управления, применяет стили и настраивает холст."""
         super().__init__()
         self.setWindowTitle("Визуализатор БД — DBSchemaVisualizer")
         self.resize(1024, 768)

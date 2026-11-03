@@ -1,0 +1,243 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ru" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.views.auth_window &mdash; документация DBSchemaVisualizer </title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=372fde1a"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/translations.js?v=cd1d70c9"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Алфавитный указатель" href="../../../genindex.html" />
+    <link rel="search" title="Поиск" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DBSchemaVisualizer
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Поиск в документации" aria-label="Поиск в документации" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Меню навигации">
+              <p class="caption" role="heading"><span class="caption-text">Руководство пользователя:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_manual.html">Руководство пользователя (User Manual)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Руководство разработчика и API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer_manual.html">Руководство разработчика (Developer Manual)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Меню навигации для мобильных устройств" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DBSchemaVisualizer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Навигация по страницам">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Код модуля</a></li>
+      <li class="breadcrumb-item active">src.views.auth_window</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Исходный код src.views.auth_window</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6.QtWidgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">QDialog</span><span class="p">,</span> <span class="n">QVBoxLayout</span><span class="p">,</span> <span class="n">QLineEdit</span><span class="p">,</span> <span class="n">QPushButton</span><span class="p">,</span> <span class="n">QLabel</span><span class="p">,</span> <span class="n">QMessageBox</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6.QtCore</span><span class="w"> </span><span class="kn">import</span> <span class="n">Qt</span>
+
+
+<div class="viewcode-block" id="AuthDialog">
+<a class="viewcode-back" href="../../../src.views.auth_window.html#src.views.auth_window.AuthDialog">[документация]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">AuthDialog</span><span class="p">(</span><span class="n">QDialog</span><span class="p">):</span>
+<div class="viewcode-block" id="AuthDialog.__init__">
+<a class="viewcode-back" href="../../../src.views.auth_window.html#src.views.auth_window.AuthDialog.__init__">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_adapter</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span> <span class="o">=</span> <span class="n">db_adapter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="s2">"Вход в аккаунт"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setFixedSize</span><span class="p">(</span><span class="mi">350</span><span class="p">,</span> <span class="mi">250</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWindowModality</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">WindowModality</span><span class="o">.</span><span class="n">ApplicationModal</span><span class="p">)</span>
+
+        <span class="n">layout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">setSpacing</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_title</span> <span class="o">=</span> <span class="n">QLabel</span><span class="p">(</span><span class="s2">"Вход в аккаунт"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_title</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignmentFlag</span><span class="o">.</span><span class="n">AlignCenter</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lbl_title</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">login_input</span> <span class="o">=</span> <span class="n">QLineEdit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">login_input</span><span class="o">.</span><span class="n">setPlaceholderText</span><span class="p">(</span><span class="s2">"Логин"</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">login_input</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">password_input</span> <span class="o">=</span> <span class="n">QLineEdit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">password_input</span><span class="o">.</span><span class="n">setPlaceholderText</span><span class="p">(</span><span class="s2">"Пароль"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">password_input</span><span class="o">.</span><span class="n">setEchoMode</span><span class="p">(</span><span class="n">QLineEdit</span><span class="o">.</span><span class="n">EchoMode</span><span class="o">.</span><span class="n">Password</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">password_input</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_login</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">"Войти"</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btn_login</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_to_reg</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">"Нету аккаунта? Зарегистрируйтесь"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_to_reg</span><span class="o">.</span><span class="n">setFlat</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btn_to_reg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_login</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s2">"accent_btn"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_login</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_login</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AuthDialog.handle_login">
+<a class="viewcode-back" href="../../../src.views.auth_window.html#src.views.auth_window.AuthDialog.handle_login">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_login</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">u</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">login_input</span><span class="o">.</span><span class="n">text</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">password_input</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">u</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">p</span><span class="p">:</span> <span class="k">return</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="o">.</span><span class="n">authenticate_user</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Ошибка"</span><span class="p">,</span> <span class="s2">"Неверный логин или пароль!"</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="RegDialog">
+<a class="viewcode-back" href="../../../src.views.auth_window.html#src.views.auth_window.RegDialog">[документация]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RegDialog</span><span class="p">(</span><span class="n">QDialog</span><span class="p">):</span>
+<div class="viewcode-block" id="RegDialog.__init__">
+<a class="viewcode-back" href="../../../src.views.auth_window.html#src.views.auth_window.RegDialog.__init__">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_adapter</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span> <span class="o">=</span> <span class="n">db_adapter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="s2">"Регистрация"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setFixedSize</span><span class="p">(</span><span class="mi">350</span><span class="p">,</span> <span class="mi">280</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWindowModality</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">WindowModality</span><span class="o">.</span><span class="n">ApplicationModal</span><span class="p">)</span>
+
+        <span class="n">layout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">setSpacing</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_title</span> <span class="o">=</span> <span class="n">QLabel</span><span class="p">(</span><span class="s2">"Регистрация"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_title</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignmentFlag</span><span class="o">.</span><span class="n">AlignCenter</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lbl_title</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">login_input</span> <span class="o">=</span> <span class="n">QLineEdit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">login_input</span><span class="o">.</span><span class="n">setPlaceholderText</span><span class="p">(</span><span class="s2">"Логин"</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">login_input</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">password_input</span> <span class="o">=</span> <span class="n">QLineEdit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">password_input</span><span class="o">.</span><span class="n">setPlaceholderText</span><span class="p">(</span><span class="s2">"Пароль"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">password_input</span><span class="o">.</span><span class="n">setEchoMode</span><span class="p">(</span><span class="n">QLineEdit</span><span class="o">.</span><span class="n">EchoMode</span><span class="o">.</span><span class="n">Password</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">password_input</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">password_repeat_input</span> <span class="o">=</span> <span class="n">QLineEdit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">password_repeat_input</span><span class="o">.</span><span class="n">setPlaceholderText</span><span class="p">(</span><span class="s2">"Повтор пароля"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">password_repeat_input</span><span class="o">.</span><span class="n">setEchoMode</span><span class="p">(</span><span class="n">QLineEdit</span><span class="o">.</span><span class="n">EchoMode</span><span class="o">.</span><span class="n">Password</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">password_repeat_input</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_register</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">"Регистрация"</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btn_register</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_to_auth</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">"Есть аккаунт? Войти"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_to_auth</span><span class="o">.</span><span class="n">setFlat</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btn_to_auth</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_register</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s2">"accent_btn"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_register</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_registration</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RegDialog.handle_registration">
+<a class="viewcode-back" href="../../../src.views.auth_window.html#src.views.auth_window.RegDialog.handle_registration">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_registration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">login_input</span><span class="o">.</span><span class="n">text</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">password_input</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+        <span class="n">pr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">password_repeat_input</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">u</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">p</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">pr</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Внимание"</span><span class="p">,</span> <span class="s2">"Заполните все поля!"</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Ошибка валидации"</span><span class="p">,</span> <span class="s2">"Имя пользователя должно содержать не менее 3 символов!"</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">6</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Ошибка валидации"</span><span class="p">,</span> <span class="s2">"Пароль должен быть не менее 6 символов!"</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">p</span> <span class="o">!=</span> <span class="n">pr</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Ошибка"</span><span class="p">,</span> <span class="s2">"Пароли не совпадают!"</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="o">.</span><span class="n">is_user_exists</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Ошибка регистрации"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Пользователь с логином '</span><span class="si">{</span><span class="n">u</span><span class="si">}</span><span class="s2">' уже существует!"</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="o">.</span><span class="n">register_user</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">p</span><span class="p">):</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">information</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Успех"</span><span class="p">,</span> <span class="s2">"Регистрация успешна!"</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Ошибка"</span><span class="p">,</span> <span class="s2">"Не удалось зарегистрировать пользователя. Попробуйте другое имя."</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Авторские права 2026, Роман. </p>
+  </div>
+
+  Собрано при помощи <a href="https://www.sphinx-doc.org/">Sphinx</a> с использованием
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">темы,</a>
+    предоставленной <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

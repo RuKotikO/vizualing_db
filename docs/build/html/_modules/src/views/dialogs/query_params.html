@@ -1,0 +1,347 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ru" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.views.dialogs.query_params &mdash; документация DBSchemaVisualizer </title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=372fde1a"></script>
+      <script src="../../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../../_static/translations.js?v=cd1d70c9"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Алфавитный указатель" href="../../../../genindex.html" />
+    <link rel="search" title="Поиск" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            DBSchemaVisualizer
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Поиск в документации" aria-label="Поиск в документации" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Меню навигации">
+              <p class="caption" role="heading"><span class="caption-text">Руководство пользователя:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../user_manual.html">Руководство пользователя (User Manual)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Руководство разработчика и API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../developer_manual.html">Руководство разработчика (Developer Manual)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Меню навигации для мобильных устройств" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">DBSchemaVisualizer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Навигация по страницам">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Код модуля</a></li>
+      <li class="breadcrumb-item active">src.views.dialogs.query_params</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Исходный код src.views.dialogs.query_params</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6.QtWidgets</span><span class="w"> </span><span class="kn">import</span> <span class="n">QDialog</span><span class="p">,</span> <span class="n">QVBoxLayout</span><span class="p">,</span> <span class="n">QHBoxLayout</span><span class="p">,</span> <span class="n">QLineEdit</span><span class="p">,</span> <span class="n">QPushButton</span><span class="p">,</span> <span class="n">QLabel</span><span class="p">,</span> <span class="n">QCheckBox</span><span class="p">,</span> <span class="n">QComboBox</span><span class="p">,</span> \
+    <span class="n">QListWidget</span><span class="p">,</span> <span class="n">QMessageBox</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6.QtCore</span><span class="w"> </span><span class="kn">import</span> <span class="n">Qt</span>
+
+
+<div class="viewcode-block" id="QueryParamsDialog">
+<a class="viewcode-back" href="../../../../src.views.dialogs.query_params.html#src.views.dialogs.query_params.QueryParamsDialog">[документация]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">QueryParamsDialog</span><span class="p">(</span><span class="n">QDialog</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Модальное окно детальной настройки параметров поискового SQL-запроса сторонней БД."""</span>
+
+<div class="viewcode-block" id="QueryParamsDialog.__init__">
+<a class="viewcode-back" href="../../../../src.views.dialogs.query_params.html#src.views.dialogs.query_params.QueryParamsDialog.__init__">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent_view_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="s2">"Параметры запроса"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="mi">750</span><span class="p">,</span> <span class="mi">480</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWindowModality</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">WindowModality</span><span class="o">.</span><span class="n">ApplicationModal</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema_metadata</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span> <span class="o">=</span> <span class="n">parent_view_data</span> <span class="k">if</span> <span class="n">parent_view_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="s2">"selected_fields"</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">"filters"</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">"sort_fields"</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">"limit"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">"raw_rules_text"</span><span class="p">:</span> <span class="p">[]</span>
+        <span class="p">}</span>
+
+        <span class="n">main_layout</span> <span class="o">=</span> <span class="n">QHBoxLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># Левая часть</span>
+        <span class="n">left_panel</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">()</span>
+        <span class="n">left_panel</span><span class="o">.</span><span class="n">setSpacing</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">left_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"&lt;b&gt;Настройка условий&lt;/b&gt;"</span><span class="p">))</span>
+
+        <span class="n">left_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"Выберите таблицу:"</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_table</span> <span class="o">=</span> <span class="n">QComboBox</span><span class="p">()</span>
+        <span class="n">left_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">combo_table</span><span class="p">)</span>
+
+        <span class="n">left_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"Выводимое поле (SELECT):"</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_fields</span> <span class="o">=</span> <span class="n">QComboBox</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_fields</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="s2">"[Не выводить]"</span><span class="p">)</span>
+        <span class="n">left_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">combo_fields</span><span class="p">)</span>
+
+        <span class="n">left_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"Фильтр по колонке (WHERE):"</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_filter_col</span> <span class="o">=</span> <span class="n">QComboBox</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_filter_col</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="s2">"[Без фильтра]"</span><span class="p">)</span>
+        <span class="n">left_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">combo_filter_col</span><span class="p">)</span>
+
+        <span class="n">left_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"Оператор:"</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_operator</span> <span class="o">=</span> <span class="n">QComboBox</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_operator</span><span class="o">.</span><span class="n">addItems</span><span class="p">([</span><span class="s2">"="</span><span class="p">,</span> <span class="s2">"&gt;"</span><span class="p">,</span> <span class="s2">"&lt;"</span><span class="p">,</span> <span class="s2">"&gt;="</span><span class="p">,</span> <span class="s2">"&lt;="</span><span class="p">,</span> <span class="s2">"!="</span><span class="p">,</span> <span class="s2">"LIKE"</span><span class="p">])</span>
+        <span class="n">left_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">combo_operator</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_data_input</span> <span class="o">=</span> <span class="n">QLineEdit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filter_data_input</span><span class="o">.</span><span class="n">setPlaceholderText</span><span class="p">(</span><span class="s2">"Значение фильтра..."</span><span class="p">)</span>
+        <span class="n">left_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filter_data_input</span><span class="p">)</span>
+
+        <span class="n">left_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"Сортировка по полю (ORDER BY):"</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_sort</span> <span class="o">=</span> <span class="n">QComboBox</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_sort</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="s2">"[Без сортировки]"</span><span class="p">)</span>
+        <span class="n">left_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">combo_sort</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">limit_input</span> <span class="o">=</span> <span class="n">QLineEdit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">limit_input</span><span class="o">.</span><span class="n">setPlaceholderText</span><span class="p">(</span><span class="s2">"Лимит строк (LIMIT)..."</span><span class="p">)</span>
+        <span class="n">left_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">limit_input</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_add_rule</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">"Добавить правило"</span><span class="p">)</span>
+        <span class="n">left_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btn_add_rule</span><span class="p">)</span>
+
+        <span class="n">main_layout</span><span class="o">.</span><span class="n">addLayout</span><span class="p">(</span><span class="n">left_panel</span><span class="p">,</span> <span class="n">stretch</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">right_panel</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">()</span>
+        <span class="n">right_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"&lt;b&gt;Данные запроса (Двойной клик — удалить параметр)&lt;/b&gt;"</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules_list</span> <span class="o">=</span> <span class="n">QListWidget</span><span class="p">()</span>
+        <span class="n">right_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rules_list</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">rule_text</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"raw_rules_text"</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rules_list</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="n">rule_text</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cb_not_condition</span> <span class="o">=</span> <span class="n">QCheckBox</span><span class="p">(</span><span class="s2">"Инвертировать условие (NOT)"</span><span class="p">)</span>
+        <span class="n">right_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cb_not_condition</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_delete_rule</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">"Удалить выбранный параметр"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_delete_rule</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s2">"destructive_btn"</span><span class="p">)</span>
+        <span class="n">right_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btn_delete_rule</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_apply</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">"Применить"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_apply</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s2">"accent_btn"</span><span class="p">)</span>
+        <span class="n">right_panel</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btn_apply</span><span class="p">)</span>
+
+        <span class="n">main_layout</span><span class="o">.</span><span class="n">addLayout</span><span class="p">(</span><span class="n">right_panel</span><span class="p">,</span> <span class="n">stretch</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_table</span><span class="o">.</span><span class="n">currentTextChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_table_changed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_add_rule</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_add_rule</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_delete_rule</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_delete_selected</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules_list</span><span class="o">.</span><span class="n">itemDoubleClicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_delete_selected</span><span class="p">)</span>  <span class="c1"># Удаление по двойному клику</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_apply</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">accept</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="QueryParamsDialog.set_schema_data">
+<a class="viewcode-back" href="../../../../src.views.dialogs.query_params.html#src.views.dialogs.query_params.QueryParamsDialog.set_schema_data">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_schema_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">schema_metadata</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema_metadata</span> <span class="o">=</span> <span class="n">schema_metadata</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_table</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">schema_metadata</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_table</span><span class="o">.</span><span class="n">addItems</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">schema_metadata</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span></div>
+
+
+<div class="viewcode-block" id="QueryParamsDialog.handle_table_changed">
+<a class="viewcode-back" href="../../../../src.views.dialogs.query_params.html#src.views.dialogs.query_params.QueryParamsDialog.handle_table_changed">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_table_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_fields</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_fields</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="s2">"[Не выводить]"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_fields</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="s2">"* [Выбрать все поля]"</span><span class="p">)</span> <span class="c1"># Добавляем звездочку</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_filter_col</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_filter_col</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="s2">"[Без фильтра]"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_sort</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_sort</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="s2">"[Без сортировки]"</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">table_name</span> <span class="ow">or</span> <span class="n">table_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema_metadata</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">table_meta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schema_metadata</span><span class="p">[</span><span class="n">table_name</span><span class="p">]</span>
+        <span class="n">field_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">field</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">table_meta</span><span class="o">.</span><span class="n">fields</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_fields</span><span class="o">.</span><span class="n">addItems</span><span class="p">(</span><span class="n">field_names</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_filter_col</span><span class="o">.</span><span class="n">addItems</span><span class="p">(</span><span class="n">field_names</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">combo_sort</span><span class="o">.</span><span class="n">addItems</span><span class="p">(</span><span class="n">field_names</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="QueryParamsDialog.handle_add_rule">
+<a class="viewcode-back" href="../../../../src.views.dialogs.query_params.html#src.views.dialogs.query_params.QueryParamsDialog.handle_add_rule">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_add_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Добавляет новое правило в структуру данных и на экран."""</span>
+        <span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">combo_table</span><span class="o">.</span><span class="n">currentText</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">table</span><span class="p">:</span> <span class="k">return</span>
+
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">combo_fields</span><span class="o">.</span><span class="n">currentText</span><span class="p">()</span>
+        <span class="n">filter_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">combo_filter_col</span><span class="o">.</span><span class="n">currentText</span><span class="p">()</span>
+        <span class="n">operator</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">combo_operator</span><span class="o">.</span><span class="n">currentText</span><span class="p">()</span>
+        <span class="n">filter_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">filter_data_input</span><span class="o">.</span><span class="n">text</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="n">sort_col</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">combo_sort</span><span class="o">.</span><span class="n">currentText</span><span class="p">()</span>
+        <span class="n">limit_val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">limit_input</span><span class="o">.</span><span class="n">text</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">field</span> <span class="o">!=</span> <span class="s2">"[Не выводить]"</span><span class="p">:</span>
+            <span class="n">actual_field</span> <span class="o">=</span> <span class="s2">"*"</span> <span class="k">if</span> <span class="n">field</span> <span class="o">==</span> <span class="s2">"* [Выбрать все поля]"</span> <span class="k">else</span> <span class="n">field</span>
+
+            <span class="k">if</span> <span class="n">table</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"selected_fields"</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"selected_fields"</span><span class="p">][</span><span class="n">table</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="k">if</span> <span class="n">actual_field</span> <span class="o">==</span> <span class="s2">"*"</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"selected_fields"</span><span class="p">][</span><span class="n">table</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"*"</span><span class="p">]</span>
+                <span class="n">items_to_remove</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">rules_list</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rules_list</span><span class="o">.</span><span class="n">count</span><span class="p">())</span>
+                                   <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules_list</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">f</span><span class="s2">"➕ Вывести: </span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s2">."</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">items_to_remove</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">rules_list</span><span class="o">.</span><span class="n">takeItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rules_list</span><span class="o">.</span><span class="n">row</span><span class="p">(</span><span class="n">item</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"raw_rules_text"</span><span class="p">]:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"raw_rules_text"</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="s2">"*"</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"selected_fields"</span><span class="p">][</span><span class="n">table</span><span class="p">]:</span>
+                    <span class="k">return</span>
+                <span class="k">if</span> <span class="n">actual_field</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"selected_fields"</span><span class="p">][</span><span class="n">table</span><span class="p">]:</span>
+                    <span class="k">return</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"selected_fields"</span><span class="p">][</span><span class="n">table</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">actual_field</span><span class="p">)</span>
+
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"➕ Вывести: </span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">actual_field</span><span class="si">}</span><span class="s2">"</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rules_list</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"raw_rules_text"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filter_col</span> <span class="o">!=</span> <span class="s2">"[Без фильтра]"</span> <span class="ow">and</span> <span class="n">filter_val</span><span class="p">:</span>
+            <span class="n">val_formatted</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">filter_val</span><span class="si">}</span><span class="s2">'"</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">filter_val</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span> <span class="k">else</span> <span class="n">filter_val</span>
+            <span class="n">condition</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">filter_col</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">operator</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">val_formatted</span><span class="si">}</span><span class="s2">"</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cb_not_condition</span><span class="o">.</span><span class="n">isChecked</span><span class="p">():</span>
+                <span class="n">condition</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"NOT (</span><span class="si">{</span><span class="n">condition</span><span class="si">}</span><span class="s2">)"</span>
+
+            <span class="k">if</span> <span class="n">condition</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"filters"</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"filters"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">condition</span><span class="p">)</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"🔍 Фильтр: </span><span class="si">{</span><span class="n">condition</span><span class="si">}</span><span class="s2">"</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rules_list</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"raw_rules_text"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">filter_data_input</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">sort_col</span> <span class="o">!=</span> <span class="s2">"[Без сортировки]"</span><span class="p">:</span>
+            <span class="n">sort_entry</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">table</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">sort_col</span><span class="si">}</span><span class="s2">"</span>
+            <span class="k">if</span> <span class="n">sort_entry</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"sort_fields"</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"sort_fields"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sort_entry</span><span class="p">)</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"↕️ Сортировка по: </span><span class="si">{</span><span class="n">sort_entry</span><span class="si">}</span><span class="s2">"</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rules_list</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"raw_rules_text"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">limit_val</span> <span class="ow">and</span> <span class="n">limit_val</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"limit"</span><span class="p">]</span> <span class="o">=</span> <span class="n">limit_val</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"🛑 Лимит строк: </span><span class="si">{</span><span class="n">limit_val</span><span class="si">}</span><span class="s2">"</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rules_list</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"raw_rules_text"</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">limit_input</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="QueryParamsDialog.handle_delete_selected">
+<a class="viewcode-back" href="../../../../src.views.dialogs.query_params.html#src.views.dialogs.query_params.QueryParamsDialog.handle_delete_selected">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_delete_selected</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Интеллектуальное удаление правила из интерфейса и всех внутренних структур Python."""</span>
+        <span class="n">current_item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rules_list</span><span class="o">.</span><span class="n">currentItem</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">current_item</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">text</span> <span class="o">=</span> <span class="n">current_item</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">text</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"raw_rules_text"</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"raw_rules_text"</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"➕ Вывести: "</span><span class="p">):</span>
+            <span class="n">clean</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"➕ Вывести: "</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="n">t_name</span><span class="p">,</span> <span class="n">f_name</span> <span class="o">=</span> <span class="n">clean</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"."</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">t_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"selected_fields"</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">f_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"selected_fields"</span><span class="p">][</span><span class="n">t_name</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"selected_fields"</span><span class="p">][</span><span class="n">t_name</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">f_name</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"selected_fields"</span><span class="p">][</span><span class="n">t_name</span><span class="p">]:</span>
+                    <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"selected_fields"</span><span class="p">][</span><span class="n">t_name</span><span class="p">]</span>
+
+        <span class="k">elif</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"🔍 Фильтр: "</span><span class="p">):</span>
+            <span class="n">clean</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"🔍 Фильтр: "</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">clean</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"filters"</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"filters"</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">clean</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"↕️ Сортировка по: "</span><span class="p">):</span>
+            <span class="n">clean</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"↕️ Сортировка по: "</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">clean</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"sort_fields"</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"sort_fields"</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">clean</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"🛑 Лимит строк: "</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">query_data</span><span class="p">[</span><span class="s2">"limit"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Стираем сам элемент из QListWidget на экране</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules_list</span><span class="o">.</span><span class="n">takeItem</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rules_list</span><span class="o">.</span><span class="n">row</span><span class="p">(</span><span class="n">current_item</span><span class="p">))</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Авторские права 2026, Роман. </p>
+  </div>
+
+  Собрано при помощи <a href="https://www.sphinx-doc.org/">Sphinx</a> с использованием
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">темы,</a>
+    предоставленной <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,825 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ru" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.views.main_window &mdash; документация DBSchemaVisualizer </title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=372fde1a"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/translations.js?v=cd1d70c9"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Алфавитный указатель" href="../../../genindex.html" />
+    <link rel="search" title="Поиск" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DBSchemaVisualizer
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Поиск в документации" aria-label="Поиск в документации" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Меню навигации">
+              <p class="caption" role="heading"><span class="caption-text">Руководство пользователя:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_manual.html">Руководство пользователя (User Manual)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Руководство разработчика и API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer_manual.html">Руководство разработчика (Developer Manual)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Меню навигации для мобильных устройств" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DBSchemaVisualizer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Навигация по страницам">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Код модуля</a></li>
+      <li class="breadcrumb-item active">src.views.main_window</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Исходный код src.views.main_window</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">csv</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6.QtWidgets</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">QMainWindow</span><span class="p">,</span> <span class="n">QWidget</span><span class="p">,</span> <span class="n">QHBoxLayout</span><span class="p">,</span> <span class="n">QVBoxLayout</span><span class="p">,</span>
+    <span class="n">QSplitter</span><span class="p">,</span> <span class="n">QListWidget</span><span class="p">,</span> <span class="n">QGraphicsView</span><span class="p">,</span> <span class="n">QFileDialog</span><span class="p">,</span>
+    <span class="n">QTextEdit</span><span class="p">,</span> <span class="n">QPushButton</span><span class="p">,</span> <span class="n">QLabel</span><span class="p">,</span> <span class="n">QCheckBox</span><span class="p">,</span> <span class="n">QLineEdit</span><span class="p">,</span> <span class="n">QTableView</span><span class="p">,</span> <span class="n">QMessageBox</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6.QtCore</span><span class="w"> </span><span class="kn">import</span> <span class="n">Qt</span><span class="p">,</span> <span class="n">QRectF</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PyQt6.QtGui</span><span class="w"> </span><span class="kn">import</span> <span class="n">QStandardItemModel</span><span class="p">,</span> <span class="n">QStandardItem</span><span class="p">,</span> <span class="n">QPixmap</span><span class="p">,</span> <span class="n">QPainter</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.views.dialogs.query_params</span><span class="w"> </span><span class="kn">import</span> <span class="n">QueryParamsDialog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.controllers.app_controller</span><span class="w"> </span><span class="kn">import</span> <span class="n">AppController</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.controllers.query_builder</span><span class="w"> </span><span class="kn">import</span> <span class="n">QueryBuilder</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.views.dialogs.connection</span><span class="w"> </span><span class="kn">import</span> <span class="n">NewConnectionDialog</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.views.canvas.scene</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatabaseCanvasScene</span>
+
+<div class="viewcode-block" id="MainWindow">
+<a class="viewcode-back" href="../../../src.views.main_window.html#src.views.main_window.MainWindow">[документация]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MainWindow</span><span class="p">(</span><span class="n">QMainWindow</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Главное окно визуализатора DBSchemaVisualizer."""</span>
+<div class="viewcode-block" id="MainWindow.__init__">
+<a class="viewcode-back" href="../../../src.views.main_window.html#src.views.main_window.MainWindow.__init__">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Инициализирует элементы управления, применяет стили и настраивает холст."""</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="s2">"Визуализатор БД — DBSchemaVisualizer"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">768</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span> <span class="o">=</span> <span class="n">AppController</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_query_storage</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"selected_fields"</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">"filters"</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">"sort_fields"</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">"limit"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">"raw_rules_text"</span><span class="p">:</span> <span class="p">[]</span>
+        <span class="p">}</span>
+
+        <span class="n">main_container</span> <span class="o">=</span> <span class="n">QWidget</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setCentralWidget</span><span class="p">(</span><span class="n">main_container</span><span class="p">)</span>
+        <span class="n">root_layout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">(</span><span class="n">main_container</span><span class="p">)</span>
+        <span class="n">root_layout</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="n">root_layout</span><span class="o">.</span><span class="n">setSpacing</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="n">top_panel</span> <span class="o">=</span> <span class="n">QWidget</span><span class="p">()</span>
+        <span class="n">top_panel</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s2">"top_panel"</span><span class="p">)</span>
+        <span class="n">top_layout</span> <span class="o">=</span> <span class="n">QHBoxLayout</span><span class="p">(</span><span class="n">top_panel</span><span class="p">)</span>
+        <span class="n">top_layout</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_connection_status</span> <span class="o">=</span> <span class="n">QLabel</span><span class="p">(</span><span class="s2">"Ожидание авторизации пользователя..."</span><span class="p">)</span>
+        <span class="n">top_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lbl_connection_status</span><span class="p">)</span>
+        <span class="n">top_layout</span><span class="o">.</span><span class="n">addStretch</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_change_conn</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">"Изменить соединение"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_refresh_schema</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">"Обновить схему"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_disconnect</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">"Отключиться"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_delete_conn</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">"Удалить соединение"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_delete_conn</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s2">"destructive_btn"</span><span class="p">)</span>
+
+        <span class="n">top_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btn_change_conn</span><span class="p">)</span>
+        <span class="n">top_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btn_refresh_schema</span><span class="p">)</span>
+        <span class="n">top_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btn_disconnect</span><span class="p">)</span>
+        <span class="n">top_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btn_delete_conn</span><span class="p">)</span>
+        <span class="n">root_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">top_panel</span><span class="p">)</span>
+
+        <span class="n">main_splitter</span> <span class="o">=</span> <span class="n">QSplitter</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">Orientation</span><span class="o">.</span><span class="n">Horizontal</span><span class="p">)</span>
+        <span class="n">root_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">main_splitter</span><span class="p">)</span>
+
+        <span class="n">left_panel</span> <span class="o">=</span> <span class="n">QWidget</span><span class="p">()</span>
+        <span class="n">left_panel</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s2">"left_panel"</span><span class="p">)</span>
+        <span class="n">left_layout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">(</span><span class="n">left_panel</span><span class="p">)</span>
+        <span class="n">left_layout</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="n">left_layout</span><span class="o">.</span><span class="n">setSpacing</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="n">left_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"&lt;b&gt;Подключения&lt;/b&gt;"</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_create_conn</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">"+ Создать соединение"</span><span class="p">)</span>
+        <span class="n">left_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btn_create_conn</span><span class="p">)</span>
+
+        <span class="n">left_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"&lt;b&gt;История:&lt;/b&gt;"</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history_list</span> <span class="o">=</span> <span class="n">QListWidget</span><span class="p">()</span>
+        <span class="n">left_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">history_list</span><span class="p">)</span>
+
+        <span class="n">left_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"&lt;b&gt;Сохранённые:&lt;/b&gt;"</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_list</span> <span class="o">=</span> <span class="n">QListWidget</span><span class="p">()</span>
+        <span class="n">left_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_list</span><span class="p">)</span>
+        <span class="n">main_splitter</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">left_panel</span><span class="p">)</span>
+
+        <span class="n">center_container</span> <span class="o">=</span> <span class="n">QWidget</span><span class="p">()</span>
+        <span class="n">center_layout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">(</span><span class="n">center_container</span><span class="p">)</span>
+        <span class="n">center_layout</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">vertical_splitter</span> <span class="o">=</span> <span class="n">QSplitter</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">Orientation</span><span class="o">.</span><span class="n">Vertical</span><span class="p">)</span>
+        <span class="n">center_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">vertical_splitter</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span> <span class="o">=</span> <span class="n">DatabaseCanvasScene</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas_view</span> <span class="o">=</span> <span class="n">QGraphicsView</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas_view</span><span class="o">.</span><span class="n">setRenderHint</span><span class="p">(</span><span class="n">QPainter</span><span class="o">.</span><span class="n">RenderHint</span><span class="o">.</span><span class="n">Antialiasing</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas_view</span><span class="o">.</span><span class="n">setDragMode</span><span class="p">(</span><span class="n">QGraphicsView</span><span class="o">.</span><span class="n">DragMode</span><span class="o">.</span><span class="n">ScrollHandDrag</span><span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">custom_wheel_event</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">modifiers</span><span class="p">()</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">KeyboardModifier</span><span class="o">.</span><span class="n">ControlModifier</span><span class="p">:</span>
+                <span class="n">zoom_in_factor</span> <span class="o">=</span> <span class="mf">1.15</span>
+                <span class="n">zoom_out_factor</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">zoom_in_factor</span>
+                <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">angleDelta</span><span class="p">()</span><span class="o">.</span><span class="n">y</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">canvas_view</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">zoom_in_factor</span><span class="p">,</span> <span class="n">zoom_in_factor</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">canvas_view</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">zoom_out_factor</span><span class="p">,</span> <span class="n">zoom_out_factor</span><span class="p">)</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+
+            <span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">modifiers</span><span class="p">()</span> <span class="o">==</span> <span class="n">Qt</span><span class="o">.</span><span class="n">KeyboardModifier</span><span class="o">.</span><span class="n">ShiftModifier</span><span class="p">:</span>
+                <span class="n">scroll_step</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">angleDelta</span><span class="p">()</span><span class="o">.</span><span class="n">y</span><span class="p">()</span>
+                <span class="n">h_bar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">canvas_view</span><span class="o">.</span><span class="n">horizontalScrollBar</span><span class="p">()</span>
+                <span class="n">h_bar</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">h_bar</span><span class="o">.</span><span class="n">value</span><span class="p">()</span> <span class="o">-</span> <span class="n">scroll_step</span><span class="p">)</span>
+                <span class="n">event</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">QGraphicsView</span><span class="o">.</span><span class="n">wheelEvent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas_view</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">canvas_view</span><span class="o">.</span><span class="n">wheelEvent</span> <span class="o">=</span> <span class="n">custom_wheel_event</span>
+        <span class="n">vertical_splitter</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">canvas_view</span><span class="p">)</span>
+
+        <span class="n">bottom_panel</span> <span class="o">=</span> <span class="n">QWidget</span><span class="p">()</span>
+        <span class="n">bottom_panel</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s2">"bottom_panel"</span><span class="p">)</span>
+        <span class="n">bottom_layout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">(</span><span class="n">bottom_panel</span><span class="p">)</span>
+        <span class="n">bottom_layout</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="n">bottom_layout</span><span class="o">.</span><span class="n">setSpacing</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+
+        <span class="n">sql_header_layout</span> <span class="o">=</span> <span class="n">QHBoxLayout</span><span class="p">()</span>
+        <span class="n">sql_header_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"&lt;b&gt;SQL запрос&lt;/b&gt;"</span><span class="p">))</span>
+        <span class="n">sql_header_layout</span><span class="o">.</span><span class="n">addStretch</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_params</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">"Параметры"</span><span class="p">)</span>
+        <span class="n">sql_header_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btn_params</span><span class="p">)</span>
+        <span class="n">bottom_layout</span><span class="o">.</span><span class="n">addLayout</span><span class="p">(</span><span class="n">sql_header_layout</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sql_text_edit</span> <span class="o">=</span> <span class="n">QTextEdit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sql_text_edit</span><span class="o">.</span><span class="n">setPlaceholderText</span><span class="p">(</span><span class="s2">"Здесь будет автоматически генерироваться SQL код..."</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sql_text_edit</span><span class="o">.</span><span class="n">setMaximumHeight</span><span class="p">(</span><span class="mi">80</span><span class="p">)</span>
+        <span class="n">bottom_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sql_text_edit</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_execute</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">"Выполнить"</span><span class="p">)</span>
+        <span class="n">bottom_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btn_execute</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">results_table</span> <span class="o">=</span> <span class="n">QTableView</span><span class="p">()</span>
+        <span class="n">bottom_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results_table</span><span class="p">)</span>
+        <span class="n">vertical_splitter</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">bottom_panel</span><span class="p">)</span>
+        <span class="n">main_splitter</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">center_container</span><span class="p">)</span>
+
+        <span class="n">right_panel</span> <span class="o">=</span> <span class="n">QWidget</span><span class="p">()</span>
+        <span class="n">right_panel</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="s2">"right_panel"</span><span class="p">)</span>
+        <span class="n">right_layout</span> <span class="o">=</span> <span class="n">QVBoxLayout</span><span class="p">(</span><span class="n">right_panel</span><span class="p">)</span>
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">setSpacing</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"&lt;b&gt;Фильтр&lt;/b&gt;"</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">search_input</span> <span class="o">=</span> <span class="n">QLineEdit</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">search_input</span><span class="o">.</span><span class="n">setPlaceholderText</span><span class="p">(</span><span class="s2">"Быстрый поиск..."</span><span class="p">)</span>
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">search_input</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cb_types</span> <span class="o">=</span> <span class="n">QCheckBox</span><span class="p">(</span><span class="s2">"Типы данных"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cb_links</span> <span class="o">=</span> <span class="n">QCheckBox</span><span class="p">(</span><span class="s2">"Линии связей"</span><span class="p">)</span>
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cb_types</span><span class="p">)</span>
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cb_links</span><span class="p">)</span>
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">addSpacing</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>
+
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"Управлять диаграммой:"</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_export</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">"Экспорт"</span><span class="p">)</span>
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btn_export</span><span class="p">)</span>
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">addSpacing</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>
+
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"Выгрузить данные:"</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_unload</span> <span class="o">=</span> <span class="n">QPushButton</span><span class="p">(</span><span class="s2">"Выгрузка"</span><span class="p">)</span>
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">btn_unload</span><span class="p">)</span>
+        <span class="n">right_layout</span><span class="o">.</span><span class="n">addStretch</span><span class="p">()</span>
+        <span class="n">main_splitter</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">right_panel</span><span class="p">)</span>
+
+        <span class="n">main_splitter</span><span class="o">.</span><span class="n">setSizes</span><span class="p">([</span><span class="mi">200</span><span class="p">,</span> <span class="mi">624</span><span class="p">,</span> <span class="mi">200</span><span class="p">])</span>
+        <span class="n">vertical_splitter</span><span class="o">.</span><span class="n">setSizes</span><span class="p">([</span><span class="mi">500</span><span class="p">,</span> <span class="mi">268</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_params</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">open_query_params_dialog</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_execute</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_execute_query</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">search_input</span><span class="o">.</span><span class="n">textChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_live_table_search</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_export</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_export_diagram</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_unload</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_unload_data</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">init_database_behavior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_adapter</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Вызывается строго после успешной авторизации пользователя."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span> <span class="o">=</span> <span class="n">db_adapter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_connection_status</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">"Авторизован в системе. Подключение к сторонней БД отсутствует."</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_create_conn</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">open_create_connection_dialog</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refresh_connection_history</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">history_list</span><span class="o">.</span><span class="n">itemClicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_history_item_clicked</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_list</span><span class="o">.</span><span class="n">itemClicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_history_item_clicked</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">history_list</span><span class="o">.</span><span class="n">itemClicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_list</span><span class="o">.</span><span class="n">clearSelection</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_list</span><span class="o">.</span><span class="n">itemClicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">history_list</span><span class="o">.</span><span class="n">clearSelection</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_disconnect</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_disconnect</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_refresh_schema</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_refresh_schema</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_delete_conn</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_delete_connection</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_change_conn</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_change_connection</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cb_types</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cb_links</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cb_types</span><span class="o">.</span><span class="n">stateChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_toggle_types</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cb_links</span><span class="o">.</span><span class="n">stateChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_toggle_links</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MainWindow.init_database_behavior">
+<a class="viewcode-back" href="../../../src.views.main_window.html#src.views.main_window.MainWindow.init_database_behavior">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">init_database_behavior</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_adapter</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Вызывается строго после успешной авторизации пользователя."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span> <span class="o">=</span> <span class="n">db_adapter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_connection_status</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">"Авторизован в системе. Подключение к сторонней БД отсутствует."</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_create_conn</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">open_create_connection_dialog</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">refresh_connection_history</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">history_list</span><span class="o">.</span><span class="n">itemClicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_history_item_clicked</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_list</span><span class="o">.</span><span class="n">itemClicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_history_item_clicked</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">history_list</span><span class="o">.</span><span class="n">itemClicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_list</span><span class="o">.</span><span class="n">clearSelection</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_list</span><span class="o">.</span><span class="n">itemClicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">history_list</span><span class="o">.</span><span class="n">clearSelection</span><span class="p">())</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_disconnect</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_disconnect</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_refresh_schema</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_refresh_schema</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_delete_conn</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_delete_connection</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">btn_change_conn</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_change_connection</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cb_types</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cb_links</span><span class="o">.</span><span class="n">setChecked</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cb_types</span><span class="o">.</span><span class="n">stateChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_toggle_types</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cb_links</span><span class="o">.</span><span class="n">stateChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_toggle_links</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MainWindow.open_create_connection_dialog">
+<a class="viewcode-back" href="../../../src.views.main_window.html#src.views.main_window.MainWindow.open_create_connection_dialog">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">open_create_connection_dialog</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dialog</span> <span class="o">=</span> <span class="n">NewConnectionDialog</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="p">,</span> <span class="n">current_user_id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dialog</span><span class="o">.</span><span class="n">exec</span><span class="p">()</span> <span class="o">==</span> <span class="n">NewConnectionDialog</span><span class="o">.</span><span class="n">DialogCode</span><span class="o">.</span><span class="n">Accepted</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">clear_current_query_data</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refresh_connection_history</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MainWindow.open_query_params_dialog">
+<a class="viewcode-back" href="../../../src.views.main_window.html#src.views.main_window.MainWindow.open_query_params_dialog">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">open_query_params_dialog</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">dialog</span> <span class="o">=</span> <span class="n">QueryParamsDialog</span><span class="p">(</span><span class="n">parent_view_data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_query_storage</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="n">active_schema</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">get_active_schema</span><span class="p">()</span>
+        <span class="n">dialog</span><span class="o">.</span><span class="n">set_schema_data</span><span class="p">(</span><span class="n">active_schema</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">dialog</span><span class="o">.</span><span class="n">exec</span><span class="p">()</span> <span class="o">==</span> <span class="n">QueryParamsDialog</span><span class="o">.</span><span class="n">DialogCode</span><span class="o">.</span><span class="n">Accepted</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_query_storage</span><span class="p">[</span><span class="s2">"selected_fields"</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sql_text_edit</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+                <span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Внимание"</span><span class="p">,</span> <span class="s2">"Вы удалили все поля для вывода (SELECT)!"</span><span class="p">)</span>
+                <span class="k">return</span>
+
+            <span class="n">builder</span> <span class="o">=</span> <span class="n">QueryBuilder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">active_metadata</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sql_code</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">build_complex_select</span><span class="p">(</span>
+                    <span class="n">selected_fields</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_query_storage</span><span class="p">[</span><span class="s2">"selected_fields"</span><span class="p">],</span>
+                    <span class="n">filters</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_query_storage</span><span class="p">[</span><span class="s2">"filters"</span><span class="p">],</span>
+                    <span class="n">sort_fields</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_query_storage</span><span class="p">[</span><span class="s2">"sort_fields"</span><span class="p">],</span>
+                    <span class="n">limit</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_query_storage</span><span class="p">[</span><span class="s2">"limit"</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sql_text_edit</span><span class="o">.</span><span class="n">setPlainText</span><span class="p">(</span><span class="n">sql_code</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">sql_text_edit</span><span class="o">.</span><span class="n">setPlainText</span><span class="p">(</span><span class="sa">f</span><span class="s2">"-- Ошибка генерации комплексного запроса: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MainWindow.refresh_connection_history">
+<a class="viewcode-back" href="../../../src.views.main_window.html#src.views.main_window.MainWindow.refresh_connection_history">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">refresh_connection_history</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Обновление истории профилей из локальной SQLite."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">history_list</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saved_list</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+        <span class="n">query_all</span> <span class="o">=</span> <span class="s2">"SELECT id, title, host, port, db_name, db_type FROM connections WHERE user_id = 1;"</span>
+        <span class="n">all_profiles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="o">.</span><span class="n">execute_query</span><span class="p">(</span><span class="n">query_all</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">all_profiles</span><span class="p">:</span>
+            <span class="n">p_id</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">db_type</span> <span class="o">=</span> <span class="n">p</span>
+            <span class="n">icon</span> <span class="o">=</span> <span class="s2">"🐘 [PG]"</span> <span class="k">if</span> <span class="n">db_type</span> <span class="o">==</span> <span class="s2">"PostgreSQL"</span> <span class="k">else</span> <span class="s2">"🗄️ [Lite]"</span>
+
+            <span class="k">if</span> <span class="n">db_type</span> <span class="o">==</span> <span class="s2">"SQLite"</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">history_list</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">icon</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2"> (Локальный файл)"</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">history_list</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">icon</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+
+        <span class="n">saved_query</span> <span class="o">=</span> <span class="s2">"SELECT title, db_type FROM connections WHERE user_id = ? AND save_password = 1;"</span>
+        <span class="n">saved_profiles</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="o">.</span><span class="n">execute_query</span><span class="p">(</span><span class="n">saved_query</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,))</span>
+
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">saved_profiles</span><span class="p">:</span>
+            <span class="n">title</span><span class="p">,</span> <span class="n">db_type</span> <span class="o">=</span> <span class="n">row</span>
+            <span class="n">icon</span> <span class="o">=</span> <span class="s2">"🐘 [PG]"</span> <span class="k">if</span> <span class="n">db_type</span> <span class="o">==</span> <span class="s2">"PostgreSQL"</span> <span class="k">else</span> <span class="s2">"🗄️ [Lite]"</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">saved_list</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">icon</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MainWindow.handle_history_item_clicked">
+<a class="viewcode-back" href="../../../src.views.main_window.html#src.views.main_window.MainWindow.handle_history_item_clicked">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_history_item_clicked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Безопасное извлечение параметров и динамическое подключение к СУБД."""</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">item</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+
+        <span class="n">clean_text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"🐘 [PG] "</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"🗄️ [Lite] "</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="s2">"("</span> <span class="ow">in</span> <span class="n">clean_text</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">clean_text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"("</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">clean_text</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">active_connector</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">active_connector</span><span class="o">.</span><span class="n">conn</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">title</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">lbl_connection_status</span><span class="o">.</span><span class="n">text</span><span class="p">():</span>
+                <span class="k">return</span>
+
+            <span class="n">reply</span> <span class="o">=</span> <span class="n">QMessageBox</span><span class="o">.</span><span class="n">question</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="s2">"Смена подключения"</span><span class="p">,</span>
+                <span class="s2">"Вы уверены, что хотите отсоединиться от текущей базы данных и переключиться на новую?"</span><span class="p">,</span>
+                <span class="n">QMessageBox</span><span class="o">.</span><span class="n">StandardButton</span><span class="o">.</span><span class="n">Yes</span> <span class="o">|</span> <span class="n">QMessageBox</span><span class="o">.</span><span class="n">StandardButton</span><span class="o">.</span><span class="n">No</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">reply</span> <span class="o">==</span> <span class="n">QMessageBox</span><span class="o">.</span><span class="n">StandardButton</span><span class="o">.</span><span class="n">No</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">history_list</span><span class="o">.</span><span class="n">clearSelection</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">saved_list</span><span class="o">.</span><span class="n">clearSelection</span><span class="p">()</span>
+                <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_current_query_data</span><span class="p">()</span>
+
+        <span class="n">query</span> <span class="o">=</span> <span class="s2">"SELECT db_type, host, port, db_name, db_user FROM connections WHERE title = ? LIMIT 1;"</span>
+        <span class="n">res_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="o">.</span><span class="n">execute_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="p">(</span><span class="n">title</span><span class="p">,))</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">res_list</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Внимание"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Профиль '</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">' не найден in локальной БД!"</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">row</span> <span class="o">=</span> <span class="n">res_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">db_type</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">db_user</span> <span class="o">=</span> <span class="n">row</span>
+
+        <span class="k">if</span> <span class="n">db_type</span> <span class="o">==</span> <span class="s2">"SQLite"</span><span class="p">:</span>
+            <span class="n">db_name</span> <span class="o">=</span> <span class="n">db_name</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">"'</span><span class="se">\"</span><span class="s2">"</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">lbl_connection_status</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Открытие локального файла базы данных: </span><span class="si">{</span><span class="n">db_name</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lbl_connection_status</span><span class="o">.</span><span class="n">repaint</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">db_name</span><span class="p">):</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">dropdown_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">db_name</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">dropdown_dir</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dropdown_dir</span><span class="p">):</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dropdown_dir</span><span class="p">,</span>
+                                    <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">db_name</span><span class="p">,</span> <span class="s1">'w'</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="k">pass</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="n">QMessageBox</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Ошибка файловой системы"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Не удалось открыть файл:</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                    <span class="k">return</span>
+
+            <span class="n">success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">connect_to_database</span><span class="p">(</span><span class="n">db_type</span><span class="o">=</span><span class="s2">"SQLite"</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="n">db_name</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lbl_connection_status</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Установка сетевого соединения с </span><span class="si">{</span><span class="n">host</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">port</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lbl_connection_status</span><span class="o">.</span><span class="n">repaint</span><span class="p">()</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">connect_to_database</span><span class="p">(</span>
+                <span class="n">db_type</span><span class="o">=</span><span class="s2">"PostgreSQL"</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">port</span><span class="p">),</span> <span class="n">database</span><span class="o">=</span><span class="n">db_name</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">db_user</span><span class="p">,</span>
+                <span class="n">password</span><span class="o">=</span><span class="s2">"your_postgres_password"</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lbl_connection_status</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">"🔌 Активная база данных [</span><span class="si">{</span><span class="n">db_type</span><span class="si">}</span><span class="s2">]: </span><span class="si">{</span><span class="n">db_name</span><span class="si">}</span><span class="s2"> (Профиль: </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="o">.</span><span class="n">log_message</span><span class="p">(</span><span class="s2">"INFO"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Пользователь переключился на БД </span><span class="si">{</span><span class="n">db_name</span><span class="si">}</span><span class="s2"> (</span><span class="si">{</span><span class="n">db_type</span><span class="si">}</span><span class="s2">)"</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">cards</span><span class="p">:</span>
+                <span class="n">first_card</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">cards</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">canvas_view</span><span class="o">.</span><span class="n">centerOn</span><span class="p">(</span><span class="n">first_card</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Ошибка СУБД"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Не удалось открыть базу данных: </span><span class="si">{</span><span class="n">db_name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MainWindow.handle_disconnect">
+<a class="viewcode-back" href="../../../src.views.main_window.html#src.views.main_window.MainWindow.handle_disconnect">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Безопасно разрывает сетевое соединение со сторонней БД и очищает холст."""</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">active_connector</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Внимание"</span><span class="p">,</span>
+                                    <span class="s2">"Активное подключение к базе данных отсутствует. Нечего отключать!"</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">active_connector</span><span class="o">.</span><span class="n">disconnect</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Ошибка при закрытии соединения: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">active_metadata</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">clear_canvas</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear_current_query_data</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_connection_status</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">"Отключено от сторонней СУБД. Холст очищен."</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="o">.</span><span class="n">log_message</span><span class="p">(</span><span class="s2">"INFO"</span><span class="p">,</span> <span class="s2">"Пользователь вручную разорвал сетевое соединение"</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MainWindow.handle_refresh_schema">
+<a class="viewcode-back" href="../../../src.views.main_window.html#src.views.main_window.MainWindow.handle_refresh_schema">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_refresh_schema</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Повторно вычитывает системные каталоги СУБД и перерисовывает схему."""</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">active_connector</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">active_connector</span><span class="o">.</span><span class="n">conn</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Внимание"</span><span class="p">,</span> <span class="s2">"Нет активного подключения для обновления схемы!"</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">metadata</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">active_connector</span><span class="o">.</span><span class="n">get_schema_metadata</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">active_metadata</span> <span class="o">=</span> <span class="n">metadata</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">render_schema</span><span class="p">(</span><span class="n">metadata</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lbl_connection_status</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Схема СУБД успешно обновлена."</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lbl_connection_status</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Ошибка обновления схемы: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MainWindow.handle_delete_connection">
+<a class="viewcode-back" href="../../../src.views.main_window.html#src.views.main_window.MainWindow.handle_delete_connection">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_delete_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Удаляет выбранное в сайдбаре подключение (из Истории или Сохранённых) из локальной БД."""</span>
+        <span class="n">active_list</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">history_list</span><span class="o">.</span><span class="n">currentItem</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">active_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history_list</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_list</span><span class="o">.</span><span class="n">currentItem</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">active_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_list</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">active_list</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Внимание"</span><span class="p">,</span>
+                                <span class="s2">"Выберите профиль подключения из списка Истории или Сохранённых для удаления!"</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">current_item</span> <span class="o">=</span> <span class="n">active_list</span><span class="o">.</span><span class="n">currentItem</span><span class="p">()</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">current_item</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+
+        <span class="n">clean_text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"🔌 "</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="s2">"("</span> <span class="ow">in</span> <span class="n">clean_text</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">clean_text</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">"("</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="n">clean_text</span>
+
+        <span class="n">reply</span> <span class="o">=</span> <span class="n">QMessageBox</span><span class="o">.</span><span class="n">question</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="s2">"Удаление"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Вы уверены, что хотите полностью удалить профиль '</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">'?"</span><span class="p">,</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">StandardButton</span><span class="o">.</span><span class="n">Yes</span> <span class="o">|</span> <span class="n">QMessageBox</span><span class="o">.</span><span class="n">StandardButton</span><span class="o">.</span><span class="n">No</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">reply</span> <span class="o">==</span> <span class="n">QMessageBox</span><span class="o">.</span><span class="n">StandardButton</span><span class="o">.</span><span class="n">Yes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="o">.</span><span class="n">delete_connection_profile</span><span class="p">(</span><span class="n">title</span><span class="p">):</span>
+                <span class="n">current_status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lbl_connection_status</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+
+                <span class="k">if</span> <span class="n">title</span> <span class="ow">in</span> <span class="n">current_status</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">active_connector</span><span class="p">:</span>
+                        <span class="k">try</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">handle_disconnect</span><span class="p">()</span>
+                        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                            <span class="k">pass</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">clear_canvas</span><span class="p">()</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">clear_current_query_data</span><span class="p">()</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">lbl_connection_status</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">"Профиль удален. Холст очищен."</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">history_list</span><span class="o">.</span><span class="n">clearSelection</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">saved_list</span><span class="o">.</span><span class="n">clearSelection</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">refresh_connection_history</span><span class="p">()</span>
+
+                <span class="n">QMessageBox</span><span class="o">.</span><span class="n">information</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Успех"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Профиль '</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">' успешно удален."</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">QMessageBox</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Ошибка"</span><span class="p">,</span>
+                                     <span class="sa">f</span><span class="s2">"Не удалось удалить профиль '</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">' из базы данных конфигураций."</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MainWindow.handle_change_connection">
+<a class="viewcode-back" href="../../../src.views.main_window.html#src.views.main_window.MainWindow.handle_change_connection">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_change_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Открывает окно изменения параметров (UPDATE) для выбранного соединения."""</span>
+        <span class="n">current_item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">history_list</span><span class="o">.</span><span class="n">currentItem</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">current_item</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Внимание"</span><span class="p">,</span> <span class="s2">"Выберите подключение из списка истории для изменения!"</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">text</span> <span class="o">=</span> <span class="n">current_item</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+
+        <span class="n">clean_text</span> <span class="o">=</span> <span class="n">text</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"🐘 [PG] "</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">"🗄️ [Lite] "</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="n">bracket_index</span> <span class="o">=</span> <span class="n">clean_text</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">" ("</span><span class="p">)</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">clean_text</span><span class="p">[:</span><span class="n">bracket_index</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">if</span> <span class="n">bracket_index</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span> <span class="k">else</span> <span class="n">clean_text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+        <span class="n">dialog</span> <span class="o">=</span> <span class="n">NewConnectionDialog</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="p">,</span> <span class="n">current_user_id</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">edit_title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dialog</span><span class="o">.</span><span class="n">exec</span><span class="p">()</span> <span class="o">==</span> <span class="n">NewConnectionDialog</span><span class="o">.</span><span class="n">DialogCode</span><span class="o">.</span><span class="n">Accepted</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">refresh_connection_history</span><span class="p">()</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">information</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Успех"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Профиль '</span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">' успешно изменен."</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MainWindow.handle_toggle_types">
+<a class="viewcode-back" href="../../../src.views.main_window.html#src.views.main_window.MainWindow.handle_toggle_types">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_toggle_types</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Реактивно скрывает/показывает типы данных на карточках холста."""</span>
+        <span class="n">is_checked</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">card</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">cards</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">card</span><span class="o">.</span><span class="n">show_types</span> <span class="o">=</span> <span class="n">is_checked</span>
+            <span class="n">card</span><span class="o">.</span><span class="n">update</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MainWindow.handle_toggle_links">
+<a class="viewcode-back" href="../../../src.views.main_window.html#src.views.main_window.MainWindow.handle_toggle_links">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_toggle_links</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Реактивно скрывает/показывает линии связей на холсте."""</span>
+        <span class="n">is_checked</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">lines</span><span class="p">:</span>
+            <span class="n">line</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="n">is_checked</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MainWindow.handle_execute_query">
+<a class="viewcode-back" href="../../../src.views.main_window.html#src.views.main_window.MainWindow.handle_execute_query">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_execute_query</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Передает автоматически сгенерированный SQL-код в активный драйвер СУБД,</span>
+<span class="sd">        получает структурированный ответ и визуализирует выборку в виджете QTableView.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">active_connector</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">active_connector</span><span class="o">.</span><span class="n">conn</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Внимание"</span><span class="p">,</span> <span class="s2">"Отсутствует активное подключение к базе данных!"</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">sql_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sql_text_edit</span><span class="o">.</span><span class="n">toPlainText</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">sql_text</span> <span class="ow">or</span> <span class="n">sql_text</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"--"</span><span class="p">):</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Внимание"</span><span class="p">,</span> <span class="s2">"Текст SQL-запроса пуст или содержит ошибку параметров!"</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">cursor</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">connector</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">controller</span><span class="o">.</span><span class="n">active_connector</span>
+            <span class="n">cursor</span> <span class="o">=</span> <span class="n">connector</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql_text</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description</span><span class="p">:</span>
+                <span class="n">column_names</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">desc</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">desc</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">description</span><span class="p">]</span>
+                <span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+
+                <span class="n">model</span> <span class="o">=</span> <span class="n">QStandardItemModel</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">column_names</span><span class="p">))</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">setHorizontalHeaderLabels</span><span class="p">(</span><span class="n">column_names</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">row_idx</span><span class="p">,</span> <span class="n">row_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">col_idx</span><span class="p">,</span> <span class="n">cell_value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row_data</span><span class="p">):</span>
+                        <span class="n">val_str</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cell_value</span><span class="p">)</span> <span class="k">if</span> <span class="n">cell_value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s2">"NULL"</span>
+                        <span class="n">item</span> <span class="o">=</span> <span class="n">QStandardItem</span><span class="p">(</span><span class="n">val_str</span><span class="p">)</span>
+                        <span class="n">item</span><span class="o">.</span><span class="n">setFlags</span><span class="p">(</span><span class="n">item</span><span class="o">.</span><span class="n">flags</span><span class="p">()</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">Qt</span><span class="o">.</span><span class="n">ItemFlag</span><span class="o">.</span><span class="n">ItemIsEditable</span><span class="p">)</span>
+                        <span class="n">model</span><span class="o">.</span><span class="n">setItem</span><span class="p">(</span><span class="n">row_idx</span><span class="p">,</span> <span class="n">col_idx</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">results_table</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">results_table</span><span class="o">.</span><span class="n">resizeColumnsToContents</span><span class="p">()</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">lbl_connection_status</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Запрос успешно выполнен. Выведено строк: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">rows</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="o">.</span><span class="n">log_message</span><span class="p">(</span><span class="s2">"INFO"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Успешно выполнен SELECT-запрос: </span><span class="si">{</span><span class="n">sql_text</span><span class="p">[:</span><span class="mi">50</span><span class="p">]</span><span class="si">}</span><span class="s2">..."</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">connector</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lbl_connection_status</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">"Запрос выполнен успешно (данные не возвращены)."</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Ошибка выполнения SQL"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"СУБД вернула ошибку:</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">lbl_connection_status</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="s2">"Ошибка при выполнении SQL-кода."</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="o">.</span><span class="n">log_message</span><span class="p">(</span><span class="s2">"ERROR"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Сбой выполнения запроса: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">cursor</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="MainWindow.clear_current_query_data">
+<a class="viewcode-back" href="../../../src.views.main_window.html#src.views.main_window.MainWindow.clear_current_query_data">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clear_current_query_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Полностью обнуляет параметры текущего SQL-запроса и очищает интерфейс вывода."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_query_storage</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"selected_fields"</span><span class="p">:</span> <span class="p">{},</span>
+            <span class="s2">"filters"</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">"sort_fields"</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s2">"limit"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="s2">"raw_rules_text"</span><span class="p">:</span> <span class="p">[]</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sql_text_edit</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_table</span><span class="o">.</span><span class="n">model</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">results_table</span><span class="o">.</span><span class="n">setModel</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MainWindow.handle_live_table_search">
+<a class="viewcode-back" href="../../../src.views.main_window.html#src.views.main_window.MainWindow.handle_live_table_search">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_live_table_search</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">search_text</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Динамически фильтрует карточки таблиц на холсте.</span>
+<span class="sd">        Скрывает те, чьи имена не содержат введенный пользователем текст.</span>
+<span class="sd">        """</span>
+        <span class="n">search_text</span> <span class="o">=</span> <span class="n">search_text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">search_text</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">card</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">cards</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">card</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">handle_toggle_links</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cb_links</span><span class="o">.</span><span class="n">checkState</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">for</span> <span class="n">t_name</span><span class="p">,</span> <span class="n">card</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">cards</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">search_text</span> <span class="ow">in</span> <span class="n">t_name</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="n">card</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">card</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">lines</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">from_card</span><span class="o">.</span><span class="n">isVisible</span><span class="p">()</span> <span class="ow">and</span> <span class="n">line</span><span class="o">.</span><span class="n">to_card</span><span class="o">.</span><span class="n">isVisible</span><span class="p">()</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">cb_links</span><span class="o">.</span><span class="n">isChecked</span><span class="p">():</span>
+                <span class="n">line</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">line</span><span class="o">.</span><span class="n">setVisible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MainWindow.handle_export_diagram">
+<a class="viewcode-back" href="../../../src.views.main_window.html#src.views.main_window.MainWindow.handle_export_diagram">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_export_diagram</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Рендерит интерактивный холст со схемой БД в растровое изображение высокого</span>
+<span class="sd">        разрешения и сохраняет его в файл формата PNG через QFileDialog.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">cards</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Внимание"</span><span class="p">,</span> <span class="s2">"На холсте нет отображаемой схемы для экспорта!"</span><span class="p">)</span>
+            <span class="k">return</span>
+
+
+        <span class="n">file_path</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">QFileDialog</span><span class="o">.</span><span class="n">getSaveFileName</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="s2">"Экспорт диаграммы структуры БД"</span><span class="p">,</span> <span class="s2">"db_schema_export.png"</span><span class="p">,</span> <span class="s2">"Изображения (*.png)"</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">file_path</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">items_rect</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">itemsBoundingRect</span><span class="p">()</span>
+
+            <span class="n">items_rect</span><span class="o">.</span><span class="n">adjust</span><span class="p">(</span><span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="o">-</span><span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+
+            <span class="n">pixmap</span> <span class="o">=</span> <span class="n">QPixmap</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">items_rect</span><span class="o">.</span><span class="n">width</span><span class="p">()),</span> <span class="nb">int</span><span class="p">(</span><span class="n">items_rect</span><span class="o">.</span><span class="n">height</span><span class="p">()))</span>
+            <span class="n">pixmap</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">Qt</span><span class="o">.</span><span class="n">GlobalColor</span><span class="o">.</span><span class="n">white</span><span class="p">)</span>
+
+            <span class="n">painter</span> <span class="o">=</span> <span class="n">QPainter</span><span class="p">(</span><span class="n">pixmap</span><span class="p">)</span>
+            <span class="n">painter</span><span class="o">.</span><span class="n">setRenderHint</span><span class="p">(</span><span class="n">QPainter</span><span class="o">.</span><span class="n">RenderHint</span><span class="o">.</span><span class="n">Antialiasing</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scene</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">painter</span><span class="p">,</span> <span class="n">QRectF</span><span class="p">(</span><span class="n">pixmap</span><span class="o">.</span><span class="n">rect</span><span class="p">()),</span> <span class="n">items_rect</span><span class="p">)</span>
+            <span class="n">painter</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">pixmap</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">"PNG"</span><span class="p">):</span>
+                <span class="n">QMessageBox</span><span class="o">.</span><span class="n">information</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Успех"</span><span class="p">,</span>
+                                        <span class="sa">f</span><span class="s2">"Диаграмма структуры успешно экспортирована в файл:</span><span class="se">\n</span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="o">.</span><span class="n">log_message</span><span class="p">(</span><span class="s2">"INFO"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Экспортирована схема в графический файл </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">"Ошибка записи файла модулем QPixmap."</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Ошибка экспорта"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Не удалось сохранить изображение схемы:</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MainWindow.handle_unload_data">
+<a class="viewcode-back" href="../../../src.views.main_window.html#src.views.main_window.MainWindow.handle_unload_data">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">handle_unload_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Выгружает текущие строки из QTableView в файлы форматов CSV или JSON</span>
+<span class="sd">        в зависимости от выбора пользователя в диалоговом окне сохранения.</span>
+<span class="sd">        """</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results_table</span><span class="o">.</span><span class="n">model</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">model</span><span class="o">.</span><span class="n">rowCount</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Внимание"</span><span class="p">,</span> <span class="s2">"В таблице результатов нет данных для выгрузки!"</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="n">file_path</span><span class="p">,</span> <span class="n">selected_filter</span> <span class="o">=</span> <span class="n">QFileDialog</span><span class="o">.</span><span class="n">getSaveFileName</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="s2">"Выгрузка данных выборки"</span><span class="p">,</span> <span class="s2">"exported_data.csv"</span><span class="p">,</span>
+            <span class="s2">"Таблица CSV (*.csv);;Документ JSON (*.json)"</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">file_path</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="n">model</span><span class="o">.</span><span class="n">headerData</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">Qt</span><span class="o">.</span><span class="n">Orientation</span><span class="o">.</span><span class="n">Horizontal</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">columnCount</span><span class="p">())]</span>
+            <span class="n">data_rows</span> <span class="o">=</span> <span class="p">[[</span><span class="n">model</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">()</span> <span class="k">if</span> <span class="n">model</span><span class="o">.</span><span class="n">item</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="k">else</span> <span class="s2">""</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">columnCount</span><span class="p">())]</span> <span class="k">for</span> <span class="n">r</span>
+                         <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">rowCount</span><span class="p">())]</span>
+
+            <span class="k">if</span> <span class="n">file_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">".json"</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"JSON"</span> <span class="ow">in</span> <span class="n">selected_filter</span><span class="p">:</span>
+                <span class="n">json_data</span> <span class="o">=</span> <span class="p">[</span><span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">headers</span><span class="p">,</span> <span class="n">row</span><span class="p">))</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">data_rows</span><span class="p">]</span>
+
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">json_data</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">ensure_ascii</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+                <span class="n">QMessageBox</span><span class="o">.</span><span class="n">information</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Успех"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Данные успешно выгружены в формате JSON:</span><span class="se">\n</span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="o">.</span><span class="n">log_message</span><span class="p">(</span><span class="s2">"INFO"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Выгружены данные выборки в JSON: </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+                <span class="k">return</span>
+
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">"utf-8-sig"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s2">";"</span><span class="p">)</span>
+                <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">headers</span><span class="p">)</span>
+                <span class="n">writer</span><span class="o">.</span><span class="n">writerows</span><span class="p">(</span><span class="n">data_rows</span><span class="p">)</span>
+
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">information</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Успех"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Данные успешно выгружены в формате CSV:</span><span class="se">\n</span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">db_adapter</span><span class="o">.</span><span class="n">log_message</span><span class="p">(</span><span class="s2">"INFO"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Выгружены данные выборки в CSV: </span><span class="si">{</span><span class="n">file_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">QMessageBox</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Ошибка выгрузки"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Не удалось выполнить выгрузку данных в файл:</span><span class="se">\n</span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span></div>
+</div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Авторские права 2026, Роман. </p>
+  </div>
+
+  Собрано при помощи <a href="https://www.sphinx-doc.org/">Sphinx</a> с использованием
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">темы,</a>
+    предоставленной <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

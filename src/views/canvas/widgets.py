@@ -4,7 +4,9 @@ from PyQt6.QtGui import QBrush, QColor, QPen, QFont
 
 
 class TableCardWidget(QGraphicsRectItem):
+    """Графический виджет карточки таблицы базы данных."""
     def __init__(self, table_metadata, x=0, y=0, parent=None):
+        """Инициализирует карточку таблицы и формирует список её полей."""
         super().__init__(parent)
         self.metadata = table_metadata
         self.name = table_metadata.name
@@ -47,6 +49,7 @@ class TableCardWidget(QGraphicsRectItem):
         }
 
     def paint(self, painter, option, widget):
+        """Отрисовывает внутренний интерфейс карточки таблицы."""
         card_rect = self.rect()
         painter.setPen(QPen(QColor("#475569"), 1.5))
         painter.setBrush(QBrush(QColor("#1E293B")))
@@ -101,6 +104,7 @@ class TableCardWidget(QGraphicsRectItem):
             current_y += self.row_height
 
     def add_relation(self, relation_line):
+        """Регистрирует объект линии связи, подключенной к данной таблице."""
         self.relations.append(relation_line)
 
     def itemChange(self, change, value):

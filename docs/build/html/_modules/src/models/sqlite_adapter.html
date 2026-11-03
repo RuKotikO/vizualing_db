@@ -1,0 +1,352 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="ru" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src.models.sqlite_adapter &mdash; документация DBSchemaVisualizer </title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=372fde1a"></script>
+      <script src="../../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../../_static/translations.js?v=cd1d70c9"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Алфавитный указатель" href="../../../genindex.html" />
+    <link rel="search" title="Поиск" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DBSchemaVisualizer
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Поиск в документации" aria-label="Поиск в документации" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Меню навигации">
+              <p class="caption" role="heading"><span class="caption-text">Руководство пользователя:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_manual.html">Руководство пользователя (User Manual)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Руководство разработчика и API:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../developer_manual.html">Руководство разработчика (Developer Manual)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Меню навигации для мобильных устройств" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DBSchemaVisualizer</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Навигация по страницам">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Код модуля</a></li>
+      <li class="breadcrumb-item active">src.models.sqlite_adapter</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Исходный код src.models.sqlite_adapter</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">sqlite3</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">hashlib</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.models.base_connector</span><span class="w"> </span><span class="kn">import</span> <span class="n">DatabaseConnector</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">src.models.data_classes</span><span class="w"> </span><span class="kn">import</span> <span class="n">TableMetadata</span><span class="p">,</span> <span class="n">FieldMetadata</span><span class="p">,</span> <span class="n">ForeignKeyRelation</span>
+
+
+<div class="viewcode-block" id="SQLiteAdapter">
+<a class="viewcode-back" href="../../../src.models.sqlite_adapter.html#src.models.sqlite_adapter.SQLiteAdapter">[документация]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">SQLiteAdapter</span><span class="p">(</span><span class="n">DatabaseConnector</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Адаптер для работы с базами данных формата SQLite."""</span>
+<div class="viewcode-block" id="SQLiteAdapter.__init__">
+<a class="viewcode-back" href="../../../src.models.sqlite_adapter.html#src.models.sqlite_adapter.SQLiteAdapter.__init__">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"app_internal.db"</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Инициализирует экземпляр адаптера SQLite."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db_path</span> <span class="o">=</span> <span class="n">db_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="SQLiteAdapter.connect">
+<a class="viewcode-back" href="../../../src.models.sqlite_adapter.html#src.models.sqlite_adapter.SQLiteAdapter.connect">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Устанавливает соединение с файлом базы данных.</span>
+<span class="sd">        Если в kwargs передан ключ 'db_path', подключается к нему.</span>
+<span class="sd">        """</span>
+        <span class="n">target_path</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"db_path"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">db_path</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">target_path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"PRAGMA foreign_keys = ON;"</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_init_internal_tables</span><span class="p">()</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">e</span></div>
+
+
+<div class="viewcode-block" id="SQLiteAdapter.disconnect">
+<a class="viewcode-back" href="../../../src.models.sqlite_adapter.html#src.models.sqlite_adapter.SQLiteAdapter.disconnect">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="SQLiteAdapter.execute_query">
+<a class="viewcode-back" href="../../../src.models.sqlite_adapter.html#src.models.sqlite_adapter.SQLiteAdapter.execute_query">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">execute_query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql_text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">params</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">())</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ConnectionError</span><span class="p">(</span><span class="s2">"БД не подключена."</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql_text</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sql_text</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">"SELECT"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+        <span class="k">return</span> <span class="p">[]</span></div>
+
+
+<div class="viewcode-block" id="SQLiteAdapter.get_schema_metadata">
+<a class="viewcode-back" href="../../../src.models.sqlite_adapter.html#src.models.sqlite_adapter.SQLiteAdapter.get_schema_metadata">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_schema_metadata</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TableMetadata</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""</span>
+<span class="sd">        Логика интроспекции структуры любого локального файла .db.</span>
+<span class="sd">        Считывает метаданные таблиц, типы столбцов и ограничения FOREIGN KEY.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ConnectionError</span><span class="p">(</span><span class="s2">"Невозможно собрать метаданные: соединение отсутствует."</span><span class="p">)</span>
+
+        <span class="n">schema_dict</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">TableMetadata</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';"</span><span class="p">)</span>
+        <span class="n">tables_raw</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+
+        <span class="n">tables</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">tables_raw</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">table_name</span> <span class="ow">in</span> <span class="n">tables</span><span class="p">:</span>
+            <span class="n">schema_dict</span><span class="p">[</span><span class="n">table_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">TableMetadata</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">table_name</span><span class="p">)</span>
+
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">"PRAGMA table_info(</span><span class="si">{</span><span class="n">table_name</span><span class="si">}</span><span class="s2">);"</span><span class="p">)</span>
+            <span class="n">columns_info</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">columns_info</span><span class="p">:</span>
+                <span class="n">col_name</span> <span class="o">=</span> <span class="n">col</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">col_type</span> <span class="o">=</span> <span class="n">col</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">if</span> <span class="n">col</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">else</span> <span class="s2">"TEXT"</span>
+                <span class="n">is_pk</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">col</span><span class="p">[</span><span class="mi">5</span><span class="p">])</span>
+
+                <span class="n">field_meta</span> <span class="o">=</span> <span class="n">FieldMetadata</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">col_name</span><span class="p">,</span> <span class="n">data_type</span><span class="o">=</span><span class="n">col_type</span><span class="p">,</span> <span class="n">is_pk</span><span class="o">=</span><span class="n">is_pk</span><span class="p">)</span>
+                <span class="n">schema_dict</span><span class="p">[</span><span class="n">table_name</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">field_meta</span><span class="p">)</span>
+
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="sa">f</span><span class="s2">"PRAGMA foreign_key_list(</span><span class="si">{</span><span class="n">table_name</span><span class="si">}</span><span class="s2">);"</span><span class="p">)</span>
+            <span class="n">fk_info_list</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">fk</span> <span class="ow">in</span> <span class="n">fk_info_list</span><span class="p">:</span>
+                <span class="n">to_table</span> <span class="o">=</span> <span class="n">fk</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">from_field</span> <span class="o">=</span> <span class="n">fk</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+                <span class="n">to_field</span> <span class="o">=</span> <span class="n">fk</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+
+                <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">schema_dict</span><span class="p">[</span><span class="n">table_name</span><span class="p">]</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">from_field</span><span class="p">:</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">is_fk</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="n">f</span><span class="o">.</span><span class="n">fk_info</span> <span class="o">=</span> <span class="n">ForeignKeyRelation</span><span class="p">(</span>
+                            <span class="n">from_field</span><span class="o">=</span><span class="n">from_field</span><span class="p">,</span>
+                            <span class="n">to_table</span><span class="o">=</span><span class="n">to_table</span><span class="p">,</span>
+                            <span class="n">to_field</span><span class="o">=</span><span class="n">to_field</span>
+                        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">schema_dict</span></div>
+
+
+<div class="viewcode-block" id="SQLiteAdapter.update_connection_profile">
+<a class="viewcode-back" href="../../../src.models.sqlite_adapter.html#src.models.sqlite_adapter.SQLiteAdapter.update_connection_profile">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_connection_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">old_title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">db_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">db_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                  <span class="n">db_user</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Обновляет существующий профиль подключения (UPDATE) по его старому названию."""</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute_query</span><span class="p">(</span>
+<span class="w">                </span><span class="sd">"""UPDATE connections </span>
+<span class="sd">                   SET title = ?, db_type = ?, host = ?, port = ?, db_name = ?, db_user = ? </span>
+<span class="sd">                   WHERE title = ?;"""</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">db_type</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">db_user</span><span class="p">,</span> <span class="n">old_title</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Error</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_init_internal_tables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"""</span>
+<span class="s2">            CREATE TABLE IF NOT EXISTS users (</span>
+<span class="s2">                id INTEGER PRIMARY KEY AUTOINCREMENT,</span>
+<span class="s2">                user_name TEXT NOT NULL UNIQUE,</span>
+<span class="s2">                password_hash TEXT NOT NULL,</span>
+<span class="s2">                last_login TEXT</span>
+<span class="s2">            );</span>
+<span class="s2">        """</span><span class="p">)</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"""</span>
+<span class="s2">            CREATE TABLE IF NOT EXISTS connections (</span>
+<span class="s2">                id INTEGER PRIMARY KEY AUTOINCREMENT,</span>
+<span class="s2">                title TEXT NOT NULL,</span>
+<span class="s2">                user_id INTEGER NOT NULL,</span>
+<span class="s2">                db_type TEXT NOT NULL,</span>
+<span class="s2">                host TEXT NOT NULL,</span>
+<span class="s2">                port INTEGER NOT NULL,</span>
+<span class="s2">                db_name TEXT NOT NULL,</span>
+<span class="s2">                db_user TEXT NOT NULL,</span>
+<span class="s2">                save_password INTEGER DEFAULT 0,</span>
+<span class="s2">                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE</span>
+<span class="s2">            );</span>
+<span class="s2">        """</span><span class="p">)</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">"""</span>
+<span class="s2">            CREATE TABLE IF NOT EXISTS system_logs (</span>
+<span class="s2">                id INTEGER PRIMARY KEY AUTOINCREMENT,</span>
+<span class="s2">                log_level TEXT NOT NULL,</span>
+<span class="s2">                message TEXT NOT NULL,</span>
+<span class="s2">                created_at TEXT DEFAULT (datetime('now', 'localtime'))</span>
+<span class="s2">            );</span>
+<span class="s2">        """</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SQLiteAdapter.is_user_exists">
+<a class="viewcode-back" href="../../../src.models.sqlite_adapter.html#src.models.sqlite_adapter.SQLiteAdapter.is_user_exists">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_user_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">""""Проверяет учетные данные пользователя в служебной базе данных."""</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_query</span><span class="p">(</span>
+            <span class="s2">"SELECT id FROM users WHERE user_name = ? LIMIT 1;"</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">username</span><span class="p">,)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="SQLiteAdapter.register_user">
+<a class="viewcode-back" href="../../../src.models.sqlite_adapter.html#src.models.sqlite_adapter.SQLiteAdapter.register_user">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">register_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">pwd_hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">password</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute_query</span><span class="p">(</span>
+                <span class="s2">"INSERT INTO users (user_name, password_hash) VALUES (?, ?);"</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">pwd_hash</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">IntegrityError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="SQLiteAdapter.authenticate_user">
+<a class="viewcode-back" href="../../../src.models.sqlite_adapter.html#src.models.sqlite_adapter.SQLiteAdapter.authenticate_user">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">authenticate_user</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">password</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Проверяет учетные данные пользователя в служебной базе данных."""</span>
+        <span class="n">pwd_hash</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">password</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_query</span><span class="p">(</span>
+            <span class="s2">"SELECT id FROM users WHERE user_name = ? AND password_hash = ?;"</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">pwd_hash</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="SQLiteAdapter.save_connection_profile">
+<a class="viewcode-back" href="../../../src.models.sqlite_adapter.html#src.models.sqlite_adapter.SQLiteAdapter.save_connection_profile">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">save_connection_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">user_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">db_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">host</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">port</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">db_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                <span class="n">db_user</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute_query</span><span class="p">(</span>
+<span class="w">                </span><span class="sd">"""INSERT INTO connections (title, user_id, db_type, host, port, db_name, db_user) </span>
+<span class="sd">                   VALUES (?, ?, ?, ?, ?, ?, ?);"""</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">title</span><span class="p">,</span> <span class="n">user_id</span><span class="p">,</span> <span class="n">db_type</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">db_name</span><span class="p">,</span> <span class="n">db_user</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Error</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="SQLiteAdapter.get_connection_profiles">
+<a class="viewcode-back" href="../../../src.models.sqlite_adapter.html#src.models.sqlite_adapter.SQLiteAdapter.get_connection_profiles">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_connection_profiles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">user_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">"""Загружает сохраненные профили сетевых и локальных подключений."""</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">execute_query</span><span class="p">(</span>
+            <span class="s2">"SELECT id, title, host, port, db_name FROM connections WHERE user_id = ?;"</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">user_id</span><span class="p">,)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SQLiteAdapter.log_message">
+<a class="viewcode-back" href="../../../src.models.sqlite_adapter.html#src.models.sqlite_adapter.SQLiteAdapter.log_message">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">log_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">execute_query</span><span class="p">(</span>
+            <span class="s2">"INSERT INTO system_logs (log_level, message) VALUES (?, ?);"</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SQLiteAdapter.delete_connection_profile">
+<a class="viewcode-back" href="../../../src.models.sqlite_adapter.html#src.models.sqlite_adapter.SQLiteAdapter.delete_connection_profile">[документация]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">delete_connection_profile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Удаляет профиль подключения из локальной базы данных."""</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">execute_query</span><span class="p">(</span><span class="s2">"DELETE FROM connections WHERE title = ?;"</span><span class="p">,</span> <span class="p">(</span><span class="n">title</span><span class="p">,))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">Error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_message</span><span class="p">(</span><span class="s2">"ERROR"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"Не удалось удалить профиль </span><span class="si">{</span><span class="n">title</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+</div>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Авторские права 2026, Роман. </p>
+  </div>
+
+  Собрано при помощи <a href="https://www.sphinx-doc.org/">Sphinx</a> с использованием
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">темы,</a>
+    предоставленной <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

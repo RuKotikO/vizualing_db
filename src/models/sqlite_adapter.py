@@ -5,7 +5,9 @@ from src.models.data_classes import TableMetadata, FieldMetadata, ForeignKeyRela
 
 
 class SQLiteAdapter(DatabaseConnector):
+    """Адаптер для работы с базами данных формата SQLite."""
     def __init__(self, db_path: str = "app_internal.db"):
+        """Инициализирует экземпляр адаптера SQLite."""
         self.db_path = db_path
         self.conn = None
 
@@ -136,7 +138,7 @@ class SQLiteAdapter(DatabaseConnector):
         self.conn.commit()
 
     def is_user_exists(self, username: str) -> bool:
-        """Проверяет, существует ли уже пользователь с таким именем."""
+        """"Проверяет учетные данные пользователя в служебной базе данных."""
         result = self.execute_query(
             "SELECT id FROM users WHERE user_name = ? LIMIT 1;",
             (username,)
@@ -155,6 +157,7 @@ class SQLiteAdapter(DatabaseConnector):
             return False
 
     def authenticate_user(self, username: str, password: str) -> bool:
+        """Проверяет учетные данные пользователя в служебной базе данных."""
         pwd_hash = hashlib.sha256(password.encode()).hexdigest()
         result = self.execute_query(
             "SELECT id FROM users WHERE user_name = ? AND password_hash = ?;",
@@ -175,6 +178,7 @@ class SQLiteAdapter(DatabaseConnector):
             return False
 
     def get_connection_profiles(self, user_id: int) -> list[tuple]:
+        """Загружает сохраненные профили сетевых и локальных подключений."""
         return self.execute_query(
             "SELECT id, title, host, port, db_name FROM connections WHERE user_id = ?;",
             (user_id,)
