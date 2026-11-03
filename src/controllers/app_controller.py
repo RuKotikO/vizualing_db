@@ -31,15 +31,12 @@ class AppController:
                 success = self.active_connector.connect(**kwargs)
 
             if success:
-                # 1. Запускаем интроспекцию структуры выбранной базы данных
                 self.active_metadata = self.active_connector.get_schema_metadata()
 
-                # 2. Передаем метаданные И ссылку на MainWindow для корректной подписки сигналов
                 self.main_window.scene.render_schema(self.active_metadata, self.main_window)
                 return True
             return False
         except Exception as e:
-            # Выводим реальный трейсбек ошибки в консоль, чтобы локализовать проблему, если она в коде
             import traceback
             traceback.print_exc()
 

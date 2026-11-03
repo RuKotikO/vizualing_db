@@ -49,36 +49,29 @@ class SQLiteAdapter(DatabaseConnector):
         schema_dict: dict[str, TableMetadata] = {}
         cursor = self.conn.cursor()
 
-        # 1. Извлекаем имена всех пользовательских таблиц
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';")
         tables_raw = cursor.fetchall()
 
-        # ИСПРАВЛЕНО: Извлекаем чистую строку (нулевой элемент кортежа row)
         tables = [row[0] for row in tables_raw]
 
         for table_name in tables:
-            # ИСПРАВЛЕНО: Убрали пропуск таблиц, чтобы системная БД визуализировала саму себя!
             schema_dict[table_name] = TableMetadata(name=table_name)
 
-            # 2. Опрашиваем структуру колонок через PRAGMA table_info
             cursor.execute(f"PRAGMA table_info({table_name});")
             columns_info = cursor.fetchall()
 
             for col in columns_info:
-                # Индексы ответа PRAGMA table_info: (cid, name, type, notnull, dflt_value, pk)
                 col_name = col[1]
                 col_type = col[2].upper() if col[2] else "TEXT"
-                is_pk = bool(col[5])  # 6-й элемент (индекс 5) — флаг PRIMARY KEY
+                is_pk = bool(col[5])
 
                 field_meta = FieldMetadata(name=col_name, data_type=col_type, is_pk=is_pk)
                 schema_dict[table_name].fields.append(field_meta)
 
-            # 3. Находим связи FOREIGN KEY через PRAGMA foreign_key_list
             cursor.execute(f"PRAGMA foreign_key_list({table_name});")
             fk_info_list = cursor.fetchall()
 
             for fk in fk_info_list:
-                # Индексы ответа: (id, seq, table, from, to, ...)
                 to_table = fk[2]
                 from_field = fk[3]
                 to_field = fk[4]
@@ -196,10 +189,9 @@ class SQLiteAdapter(DatabaseConnector):
     def delete_connection_profile(self, title: str) -> bool:
         """Удаляет профиль подключения из локальной базы данных."""
         try:
-            # Использовать метод execute_query напрямую
             self.execute_query("DELETE FROM connections WHERE title = ?;", (title,))
             if self.conn:
-                self.conn.commit()  # Гарантируем запись на диск
+                self.conn.commit()
             return True
         except sqlite3.Error as e:
             self.log_message("ERROR", f"Не удалось удалить профиль {title}: {e}")

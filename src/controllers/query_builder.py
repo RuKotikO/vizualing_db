@@ -35,7 +35,7 @@ class QueryBuilder:
                     new_step = (current, neighbor, keys[0], keys[1])
                     new_path = path + [new_step]
                     if neighbor in needed_targets:
-                        return new_path  # Возвращаем путь как только нашли связующую ноду
+                        return new_path
                     queue.append([neighbor, new_path])
         return []
 
@@ -51,7 +51,6 @@ class QueryBuilder:
         if not selected_fields:
             return ""
 
-        # 1. Формируем секцию SELECT
         select_parts = []
         for t_name, fields in selected_fields.items():
             for f_name in fields:
@@ -59,55 +58,41 @@ class QueryBuilder:
 
         sql = f"SELECT {', '.join(select_parts)}"
 
-        # 2. Распределяем таблицы на связанные группы и изолированные ноды
         tables_list = list(selected_fields.keys())
         base_table = tables_list[0]
 
-        # Контейнеры для сборки структуры FROM / JOIN
         from_tables = [base_table]
         join_clauses = []
         joined_tables = {base_table}
 
-        # Проходим по всем остальным запрошенным таблицам
         for target_table in tables_list[1:]:
             if target_table in joined_tables:
                 continue
 
-            # Пытаемся найти путь в графе FOREIGN KEY связей от базовой таблицы
             path = self.find_join_path(base_table, {target_table})
 
             if path:
-                # Если путь есть — строим цепочку INNER JOIN
                 for step in path:
                     curr_t, next_t, keys_from, keys_to = step
-                    # Извлекаем имена полей из кортежа связей графа
                     f_from, f_to = keys_from, keys_to
                     if next_t not in joined_tables:
                         join_clauses.append(f"INNER JOIN {next_t} ON {curr_t}.{f_from} = {next_t}.{f_to}")
                         joined_tables.add(next_t)
             else:
-                # ИСПРАВЛЕНО: Если пути через FOREIGN KEY нет — таблица изолирована!
-                # Добавляем её в секцию FROM как независимый источник (CROSS JOIN)
                 from_tables.append(target_table)
                 joined_tables.add(target_table)
 
-        # 3. Собираем секцию FROM и JOIN воедино
-        # Все несвязанные базовые таблицы перечисляются через запятую
         sql += f"\nFROM {', '.join(from_tables)}"
 
-        # Если были какие-то связанные подграфы, дописываем их JOIN-условия
         if join_clauses:
             sql += "\n" + "\n".join(join_clauses)
 
-        # 4. Секция WHERE (Фильтры)
         if filters:
             sql += f"\nWHERE {' AND '.join(filters)}"
 
-        # 5. Секция ORDER BY (Сортировка)
         if sort_fields:
             sql += f"\nORDER BY {', '.join(sort_fields)}"
 
-        # 6. Секция LIMIT
         if limit and limit.isdigit():
             sql += f"\nLIMIT {limit}"
 

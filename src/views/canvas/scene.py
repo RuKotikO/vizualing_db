@@ -1,3 +1,4 @@
+import math
 from PyQt6.QtWidgets import QGraphicsScene, QGraphicsPathItem
 from PyQt6.QtCore import QPointF, Qt, QRectF
 from PyQt6.QtGui import QPen, QColor, QPainterPath
@@ -12,9 +13,9 @@ class RelationLineItem(QGraphicsPathItem):
 
     def __init__(self, from_card, fk_field_name, to_card, pk_field_name="id", parent=None):
         super().__init__(parent)
-        self.from_card = from_card  # Технически: дочерняя (FK)
+        self.from_card = from_card
         self.fk_field_name = fk_field_name
-        self.to_card = to_card  # Технически: родительская (PK)
+        self.to_card = to_card
         self.pk_field_name = pk_field_name
 
         self.setPen(
@@ -29,7 +30,6 @@ class RelationLineItem(QGraphicsPathItem):
         fk_pts = self.from_card.get_field_edge_points(self.fk_field_name)
         pk_pts = self.to_card.get_field_edge_points(self.pk_field_name)
 
-        # Координаты и размеры карточек для точного расчёта зазоров
         x_fk = self.from_card.scenePos().x()
         w_fk = self.from_card.width
         x_pk = self.to_card.scenePos().x()
@@ -37,27 +37,23 @@ class RelationLineItem(QGraphicsPathItem):
 
         path = QPainterPath()
 
-        # СЦЕНАРИЙ 1: Карточка PK находится ЛЕВЕЕ карточки FK
         if x_pk + w_pk < x_fk:
-            p_start = pk_pts["right"]  # Выходим справа из PK
-            p_finish = fk_pts["left"]  # Заходим слева в FK
+            p_start = pk_pts["right"]
+            p_finish = fk_pts["left"]
             target_side = "left"
 
-            # Центральная ось — строго посередине пустого пространства МЕЖДУ карточками
             mid_x = x_pk + w_pk + (x_fk - (x_pk + w_pk)) / 2
 
             path.moveTo(p_start)
-            path.lineTo(mid_x, p_start.y())  # Горизонтальный выход на центральную ось
-            path.lineTo(mid_x, p_finish.y())  # Вертикальный спуск/подъем до уровня FK
-            path.lineTo(p_finish)  # Горизонтальный заход в FK
+            path.lineTo(mid_x, p_start.y())
+            path.lineTo(mid_x, p_finish.y())
+            path.lineTo(p_finish)
 
-        # СЦЕНАРИЙ 2: Карточка PK находится ПРАВЕЕ карточки FK
         elif x_fk + w_fk < x_pk:
-            p_start = pk_pts["left"]  # Выходим слева из PK
-            p_finish = fk_pts["right"]  # Заходим справа в FK
+            p_start = pk_pts["left"]
+            p_finish = fk_pts["right"]
             target_side = "right"
 
-            # Центральная ось — строго посередине пустого пространства между ними
             mid_x = x_fk + w_fk + (x_pk - (x_fk + w_fk)) / 2
 
             path.moveTo(p_start)
@@ -65,30 +61,25 @@ class RelationLineItem(QGraphicsPathItem):
             path.lineTo(mid_x, p_finish.y())
             path.lineTo(p_finish)
 
-        # СЦЕНАРИЙ 3: Карточки выстроены вертикально друг под другом (или сильно перекрываются по X)
         else:
-            p_start = pk_pts["left"]  # Выходим слева
-            p_finish = fk_pts["left"]  # Заходим слева
+            p_start = pk_pts["left"]
+            p_finish = fk_pts["left"]
             target_side = "left"
 
-            # Выносим вертикальный мост левее самой левой карточки на фиксированный отступ 30px
             min_x = min(x_fk, x_pk)
             mid_x = min_x - 30
 
             path.moveTo(p_start)
-            path.lineTo(mid_x, p_start.y())  # Усик влево наружу
-            path.lineTo(mid_x, p_finish.y())  # Вертикальный шлейф сбоку от карточек
-            path.lineTo(p_finish)  # Заход вправо в поле FK
+            path.lineTo(mid_x, p_start.y())
+            path.lineTo(mid_x, p_finish.y())
+            path.lineTo(p_finish)
 
-        # 3. Отрисовка наконечника стрелочки (остриё всегда смотрит внутрь ячейки FK)
         arrow_size = 6
         if target_side == "left":
-            # Заход в левую грань карточки -> стрелка указывает НАПРАВО ( > )
             path.moveTo(p_finish.x() - arrow_size, p_finish.y() - arrow_size)
             path.lineTo(p_finish)
             path.lineTo(p_finish.x() - arrow_size, p_finish.y() + arrow_size)
         else:
-            # Заход в правую грань карточки -> стрелка указывает НАЛЕВО ( < )
             path.moveTo(p_finish.x() + arrow_size, p_finish.y() - arrow_size)
             path.lineTo(p_finish)
             path.lineTo(p_finish.x() + arrow_size, p_finish.y() + arrow_size)
@@ -100,7 +91,8 @@ class DatabaseCanvasScene(QGraphicsScene):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.main_window_ref = parent
-        self.setSceneRect(0, 0, 2000, 2000)
+        # Изначально задаем дефолтный размер сцены
+        self.setSceneRect(0, 0, 1000, 1000)
         self.cards = {}
         self.lines = []
 
@@ -108,28 +100,46 @@ class DatabaseCanvasScene(QGraphicsScene):
         self.clear()
         self.cards.clear()
         self.lines.clear()
+        self.setSceneRect(0, 0, 1000, 1000)
 
     def render_schema(self, schema_metadata, main_window=None):
         if main_window is not None:
             self.main_window_ref = main_window
 
         self.clear_canvas()
+        if not schema_metadata:
+            return
 
-        start_x, start_y = 450, 450
+        total_tables = len(schema_metadata)
+        max_columns = max(3, math.ceil(math.sqrt(total_tables)))
+
+        start_x, start_y = 50, 50
         gap_x = 340
+        gap_y = 60
+
         current_column = 0
+        current_row_max_height = 0
+
+        current_x = start_x
+        current_y = start_y
 
         for t_name, t_meta in schema_metadata.items():
-            card = TableCardWidget(t_meta, start_x + (current_column * gap_x), start_y)
+            card = TableCardWidget(t_meta, current_x, current_y)
             self.addItem(card)
             self.cards[t_name] = card
 
-            current_column += 1
-            if current_column >= 3:
-                current_column = 0
-                start_y += 280
+            if card.height > current_row_max_height:
+                current_row_max_height = card.height
 
-        # Стабильный технический вызов для внутренней бизнес-логики SQL
+            current_column += 1
+            if current_column >= max_columns:
+                current_column = 0
+                current_x = start_x
+                current_y += current_row_max_height + gap_y
+                current_row_max_height = 0
+            else:
+                current_x += gap_x
+
         for table_name, table_meta in schema_metadata.items():
             for field in table_meta.fields:
                 if field.is_fk and field.fk_info:
@@ -145,3 +155,8 @@ class DatabaseCanvasScene(QGraphicsScene):
                         )
                         self.addItem(line_item)
                         self.lines.append(line_item)
+
+        br = self.itemsBoundingRect()
+        if not br.isNull():
+            br.adjust(-100, -100, 100, 100)
+            self.setSceneRect(br)

@@ -10,6 +10,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt, QRectF
 from PyQt6.QtGui import QStandardItemModel, QStandardItem, QPixmap, QPainter
 
+from src.views.dialogs.query_params import QueryParamsDialog
 from src.controllers.app_controller import AppController
 from src.controllers.query_builder import QueryBuilder
 from src.views.dialogs.connection import NewConnectionDialog
@@ -21,11 +22,9 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Визуализатор БД — DBSchemaVisualizer")
         self.resize(1024, 768)
 
-        # Инициализируем контроллер управления сторонней БД
         self.controller = AppController(self)
-        self.db_adapter = None  # Ссылка на локальную служебную БД (задается при авторизации)
+        self.db_adapter = None
 
-        # Постоянный контейнер параметров текущего SQL запроса, чтобы ничего не сбрасывалось при закрытии окон
         self.current_query_storage = {
             "selected_fields": {},
             "filters": [],
@@ -40,9 +39,6 @@ class MainWindow(QMainWindow):
         root_layout.setContentsMargins(10, 10, 10, 10)
         root_layout.setSpacing(10)
 
-        # ==========================================
-        # 1. ВЕРХНЯЯ ПАНЕЛЬ (Управление подключением)
-        # ==========================================
         top_panel = QWidget()
         top_panel.setObjectName("top_panel")
         top_layout = QHBoxLayout(top_panel)
@@ -64,13 +60,9 @@ class MainWindow(QMainWindow):
         top_layout.addWidget(self.btn_delete_conn)
         root_layout.addWidget(top_panel)
 
-        # ==========================================
-        # 2. ОСНОВНАЯ РАБОЧАЯ ЗОНА (Горизонтальный Splitter)
-        # ==========================================
         main_splitter = QSplitter(Qt.Orientation.Horizontal)
         root_layout.addWidget(main_splitter)
 
-        # --- ЛЕВЫЙ САЙДБАР (Подключения) ---
         left_panel = QWidget()
         left_panel.setObjectName("left_panel")
         left_layout = QVBoxLayout(left_panel)
@@ -90,7 +82,6 @@ class MainWindow(QMainWindow):
         left_layout.addWidget(self.saved_list)
         main_splitter.addWidget(left_panel)
 
-        # --- ЦЕНТРАЛЬНЫЙ РАБОЧИЙ БЛОК (Вертикальный Splitter) ---
         center_container = QWidget()
         center_layout = QVBoxLayout(center_container)
         center_layout.setContentsMargins(0, 0, 0, 0)
@@ -98,13 +89,11 @@ class MainWindow(QMainWindow):
         vertical_splitter = QSplitter(Qt.Orientation.Vertical)
         center_layout.addWidget(vertical_splitter)
 
-        # Графический интерактивный холст
         self.scene = DatabaseCanvasScene()
         self.canvas_view = QGraphicsView(self.scene)
         self.canvas_view.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.canvas_view.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
 
-        # НАСТРОЙКА МАСШТАБИРОВАНИЯ И НАВИГАЦИИ ПО ХОЛСТУ
         def custom_wheel_event(event):
             if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
                 zoom_in_factor = 1.15
@@ -114,13 +103,19 @@ class MainWindow(QMainWindow):
                 else:
                     self.canvas_view.scale(zoom_out_factor, zoom_out_factor)
                 event.accept()
+
+            elif event.modifiers() == Qt.KeyboardModifier.ShiftModifier:
+                scroll_step = event.angleDelta().y()
+                h_bar = self.canvas_view.horizontalScrollBar()
+                h_bar.setValue(h_bar.value() - scroll_step)
+                event.accept()
+
             else:
                 QGraphicsView.wheelEvent(self.canvas_view, event)
 
         self.canvas_view.wheelEvent = custom_wheel_event
         vertical_splitter.addWidget(self.canvas_view)
 
-        # Нижняя панель (SQL запрос)
         bottom_panel = QWidget()
         bottom_panel.setObjectName("bottom_panel")
         bottom_layout = QVBoxLayout(bottom_panel)
@@ -147,7 +142,6 @@ class MainWindow(QMainWindow):
         vertical_splitter.addWidget(bottom_panel)
         main_splitter.addWidget(center_container)
 
-        # --- ПРАВЫЙ САЙДБАР (Фильтр, Экспорт и Выгрузка) ---
         right_panel = QWidget()
         right_panel.setObjectName("right_panel")
         right_layout = QVBoxLayout(right_panel)
@@ -179,7 +173,6 @@ class MainWindow(QMainWindow):
         main_splitter.setSizes([200, 624, 200])
         vertical_splitter.setSizes([500, 268])
 
-        # СТАТИЧЕСКАЯ ИНИЦИАЛИЗАЦИЯ СИГНАЛОВ ЯДРА (Гарантирует работу кнопок независимо от авторизации)
         self.btn_params.clicked.connect(self.open_query_params_dialog)
         self.btn_execute.clicked.connect(self.handle_execute_query)
         self.search_input.textChanged.connect(self.handle_live_table_search)
@@ -191,14 +184,12 @@ class MainWindow(QMainWindow):
         self.db_adapter = db_adapter
         self.lbl_connection_status.setText("Авторизован в системе. Подключение к сторонней БД отсутствует.")
 
-        # Подключаем события сайдбаров кнопок
         self.btn_create_conn.clicked.connect(self.open_create_connection_dialog)
         self.refresh_connection_history()
 
         self.history_list.itemClicked.connect(self.handle_history_item_clicked)
         self.saved_list.itemClicked.connect(self.handle_history_item_clicked)
 
-        # Сбрасываем выделение со второго списка при клике на первый
         self.history_list.itemClicked.connect(lambda: self.saved_list.clearSelection())
         self.saved_list.itemClicked.connect(lambda: self.history_list.clearSelection())
 
@@ -217,14 +208,12 @@ class MainWindow(QMainWindow):
         self.db_adapter = db_adapter
         self.lbl_connection_status.setText("Авторизован в системе. Подключение к сторонней БД отсутствует.")
 
-        # Подключаем события сайдбаров кнопок
         self.btn_create_conn.clicked.connect(self.open_create_connection_dialog)
         self.refresh_connection_history()
 
         self.history_list.itemClicked.connect(self.handle_history_item_clicked)
         self.saved_list.itemClicked.connect(self.handle_history_item_clicked)
 
-        # Сбрасываем выделение со второго списка при клике на первый
         self.history_list.itemClicked.connect(lambda: self.saved_list.clearSelection())
         self.saved_list.itemClicked.connect(lambda: self.history_list.clearSelection())
 
@@ -241,21 +230,17 @@ class MainWindow(QMainWindow):
     def open_create_connection_dialog(self):
         dialog = NewConnectionDialog(self.db_adapter, current_user_id=1, parent=self)
         if dialog.exec() == NewConnectionDialog.DialogCode.Accepted:
-            # СБРОС ЗАПРОСА: Если успешно создали и переключились на новое соединение
             self.clear_current_query_data()
             self.refresh_connection_history()
 
     def open_query_params_dialog(self):
-        from src.views.dialogs.query_params import QueryParamsDialog
 
-        # Передаем ссылку на наше постоянное хранилище в конструктор диалога
         dialog = QueryParamsDialog(parent_view_data=self.current_query_storage, parent=self)
 
         active_schema = self.controller.get_active_schema()
         dialog.set_schema_data(active_schema)
 
         if dialog.exec() == QueryParamsDialog.DialogCode.Accepted:
-            # Данные гарантированно сохранились внутри self.current_query_storage
             if not self.current_query_storage["selected_fields"]:
                 self.sql_text_edit.clear()
                 QMessageBox.warning(self, "Внимание", "Вы удалили все поля для вывода (SELECT)!")
@@ -263,7 +248,6 @@ class MainWindow(QMainWindow):
 
             builder = QueryBuilder(self.controller.active_metadata)
             try:
-                # Генерируем сложный запрос на базе сохраненной структуры
                 sql_code = builder.build_complex_select(
                     selected_fields=self.current_query_storage["selected_fields"],
                     filters=self.current_query_storage["filters"],
@@ -279,13 +263,11 @@ class MainWindow(QMainWindow):
         self.history_list.clear()
         self.saved_list.clear()
 
-        # Получаем абсолютно все профили для истории
         all_profiles = self.db_adapter.get_connection_profiles(user_id=1)
         for p in all_profiles:
             p_id, title, host, port, db_name = p
             self.history_list.addItem(f"🔌 {title} ({host}:{port})")
 
-        # Запрашиваем из SQLite только те, где save_password = 1
         saved_query = "SELECT title FROM connections WHERE user_id = ? AND save_password = 1;"
         saved_profiles = self.db_adapter.execute_query(saved_query, (1,))
         for row in saved_profiles:
@@ -301,7 +283,6 @@ class MainWindow(QMainWindow):
         else:
             title = clean_text
 
-        # ПРОВЕРКА НА АКТИВНОЕ СОЕДИНЕНИЕ: Добавлена безопасность к self.controller
         if self.controller and self.controller.active_connector and self.controller.active_connector.conn:
             if title in self.lbl_connection_status.text():
                 return
@@ -365,7 +346,6 @@ class MainWindow(QMainWindow):
 
     def handle_disconnect(self):
         """Безопасно разрывает сетевое соединение со сторонней БД и очищает холст."""
-        # ПРОВЕРКА: Если контроллер или коннектор отсутствуют/уже отключены
         if not self.controller or not self.controller.active_connector:
             QMessageBox.critical(self, "Внимание",
                                     "Активное подключение к базе данных отсутствует. Нечего отключать!")
@@ -379,7 +359,6 @@ class MainWindow(QMainWindow):
         self.controller.active_metadata.clear()
         self.scene.clear_canvas()
 
-        # Универсальный метод очистки
         self.clear_current_query_data()
 
         self.lbl_connection_status.setText("Отключено от сторонней СУБД. Холст очищен.")
@@ -389,7 +368,6 @@ class MainWindow(QMainWindow):
     def handle_refresh_schema(self):
         """Повторно вычитывает системные каталоги СУБД и перерисовывает схему."""
         if not self.controller.active_connector or not self.controller.active_connector.conn:
-            from PyQt6.QtWidgets import QMessageBox
             QMessageBox.warning(self, "Внимание", "Нет активного подключения для обновления схемы!")
             return
 
@@ -397,7 +375,6 @@ class MainWindow(QMainWindow):
             metadata = self.controller.active_connector.get_schema_metadata()
             self.controller.active_metadata = metadata
 
-            # ИСПРАВЛЕНО: Передаем метаданные и self
             self.scene.render_schema(metadata, self)
             self.lbl_connection_status.setText(f"Схема СУБД успешно обновлена.")
         except Exception as e:
@@ -434,9 +411,7 @@ class MainWindow(QMainWindow):
             if self.db_adapter.delete_connection_profile(title):
                 current_status = self.lbl_connection_status.text()
 
-                # Если удаляем ту базу, к которой сейчас подключены — сбрасываем холст
                 if title in current_status:
-                    # ИСПРАВЛЕНО: Безопасный вызов отключения с проверкой существования коннектора
                     if self.controller and self.controller.active_connector:
                         try:
                             self.handle_disconnect()
@@ -468,8 +443,6 @@ class MainWindow(QMainWindow):
         bracket_index = clean_text.find(" (")
         title = clean_text[:bracket_index].strip() if bracket_index != -1 else clean_text.strip()
 
-        # Открываем диалог, передавая параметр edit_title
-        from .dialogs.connection import NewConnectionDialog
         dialog = NewConnectionDialog(self.db_adapter, current_user_id=1, edit_title=title, parent=self)
         if dialog.exec() == NewConnectionDialog.DialogCode.Accepted:
             self.refresh_connection_history()
@@ -477,10 +450,10 @@ class MainWindow(QMainWindow):
 
     def handle_toggle_types(self, state):
         """Реактивно скрывает/показывает типы данных на карточках холста."""
-        is_checked = (state == 2) # 2 означает Qt.CheckState.Checked
+        is_checked = (state == 2)
         for card in self.scene.cards.values():
             card.show_types = is_checked
-            card.update() # Форсируем попиксельную перерисовку QPainter
+            card.update()
 
     def handle_toggle_links(self, state):
         """Реактивно скрывает/показывает линии связей на холсте."""
@@ -509,24 +482,19 @@ class MainWindow(QMainWindow):
             cursor.execute(sql_text)
 
             if cursor.description:
-                # ИСПРАВЛЕНО: Извлекаем строго нулевой элемент кортежа (имя столбца)
                 column_names = [str(desc[0]) for desc in cursor.description]
                 rows = cursor.fetchall()
 
-                # Создаем классическую модель данных PyQt6
                 model = QStandardItemModel(len(rows), len(column_names))
                 model.setHorizontalHeaderLabels(column_names)
 
-                # Заполняем ячейки таблицы
                 for row_idx, row_data in enumerate(rows):
                     for col_idx, cell_value in enumerate(row_data):
                         val_str = str(cell_value) if cell_value is not None else "NULL"
                         item = QStandardItem(val_str)
-                        # Запрещаем редактирование ячеек пользователем напрямую
                         item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                         model.setItem(row_idx, col_idx, item)
 
-                # Привязываем заполненную модель к сетке результатов
                 self.results_table.setModel(model)
                 self.results_table.resizeColumnsToContents()
 
@@ -561,7 +529,6 @@ class MainWindow(QMainWindow):
         }
         self.sql_text_edit.clear()
 
-        # Очищаем модель таблицы результатов, чтобы старые данные не оставались на экране
         if self.results_table.model() is not None:
             self.results_table.setModel(None)
 
@@ -572,11 +539,9 @@ class MainWindow(QMainWindow):
         """
         search_text = search_text.strip().lower()
 
-        # Если поле поиска пустое — принудительно показываем абсолютно все таблицы
         if not search_text:
             for card in self.scene.cards.values():
                 card.setVisible(True)
-            # Также включаем отображение линий связей, если стоит общая галочка
             self.handle_toggle_links(self.cb_links.checkState().value)
             return
 
@@ -615,7 +580,6 @@ class MainWindow(QMainWindow):
             items_rect.adjust(-20, -20, 20, 20)
 
             pixmap = QPixmap(int(items_rect.width()), int(items_rect.height()))
-            # Заливаем фон белым цветом (как в QGraphicsView)
             pixmap.fill(Qt.GlobalColor.white)
 
             painter = QPainter(pixmap)

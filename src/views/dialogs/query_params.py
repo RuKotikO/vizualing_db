@@ -14,13 +14,12 @@ class QueryParamsDialog(QDialog):
 
         self.schema_metadata = {}
 
-        # Ссылаемся на постоянное хранилище данных в MainWindow, чтобы ничего не сбрасывалось
         self.query_data = parent_view_data if parent_view_data is not None else {
             "selected_fields": {},
             "filters": [],
             "sort_fields": [],
             "limit": None,
-            "raw_rules_text": []  # Хранит точные строки для QListWidget
+            "raw_rules_text": []
         }
 
         main_layout = QHBoxLayout(self)
@@ -67,21 +66,18 @@ class QueryParamsDialog(QDialog):
 
         main_layout.addLayout(left_panel, stretch=1)
 
-        # Правая часть
         right_panel = QVBoxLayout()
         right_panel.addWidget(QLabel("<b>Данные запроса (Двойной клик — удалить параметр)</b>"))
 
         self.rules_list = QListWidget()
         right_panel.addWidget(self.rules_list)
 
-        # Инициализируем список ранее сохраненными правилами, чтобы они не исчезали!
         for rule_text in self.query_data["raw_rules_text"]:
             self.rules_list.addItem(rule_text)
 
         self.cb_not_condition = QCheckBox("Инвертировать условие (NOT)")
         right_panel.addWidget(self.cb_not_condition)
 
-        # Добавляем отдельную кнопку удаления выбранного параметра
         self.btn_delete_rule = QPushButton("Удалить выбранный параметр")
         self.btn_delete_rule.setObjectName("destructive_btn")
         right_panel.addWidget(self.btn_delete_rule)
@@ -92,7 +88,6 @@ class QueryParamsDialog(QDialog):
 
         main_layout.addLayout(right_panel, stretch=1)
 
-        # Сигналы
         self.combo_table.currentTextChanged.connect(self.handle_table_changed)
         self.btn_add_rule.clicked.connect(self.handle_add_rule)
         self.btn_delete_rule.clicked.connect(self.handle_delete_selected)
@@ -136,7 +131,6 @@ class QueryParamsDialog(QDialog):
         sort_col = self.combo_sort.currentText()
         limit_val = self.limit_input.text().strip()
 
-        # 1. Поля SELECT
         if field != "[Не выводить]":
             if table not in self.query_data["selected_fields"]:
                 self.query_data["selected_fields"][table] = []
@@ -146,7 +140,6 @@ class QueryParamsDialog(QDialog):
                 self.rules_list.addItem(msg)
                 self.query_data["raw_rules_text"].append(msg)
 
-        # 2. Фильтры WHERE
         if filter_col != "[Без фильтра]" and filter_val:
             val_formatted = f"'{filter_val}'" if not filter_val.isdigit() else filter_val
             condition = f"{table}.{filter_col} {operator} {val_formatted}"
@@ -160,7 +153,6 @@ class QueryParamsDialog(QDialog):
                 self.query_data["raw_rules_text"].append(msg)
                 self.filter_data_input.clear()
 
-        # 3. Сортировка ORDER BY
         if sort_col != "[Без сортировки]":
             sort_entry = f"{table}.{sort_col}"
             if sort_entry not in self.query_data["sort_fields"]:
@@ -169,7 +161,6 @@ class QueryParamsDialog(QDialog):
                 self.rules_list.addItem(msg)
                 self.query_data["raw_rules_text"].append(msg)
 
-        # 4. Лимит LIMIT
         if limit_val and limit_val.isdigit():
             self.query_data["limit"] = limit_val
             msg = f"🛑 Лимит строк: {limit_val}"
@@ -185,11 +176,9 @@ class QueryParamsDialog(QDialog):
 
         text = current_item.text()
 
-        # Удаляем из текстового кеша списка
         if text in self.query_data["raw_rules_text"]:
             self.query_data["raw_rules_text"].remove(text)
 
-        # Парсим строку для удаления из соответствующей бизнес-структуры
         if text.startswith("➕ Вывести: "):
             clean = text.replace("➕ Вывести: ", "").strip()
             t_name, f_name = clean.split(".")

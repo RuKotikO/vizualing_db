@@ -63,26 +63,22 @@ class NewConnectionDialog(QDialog):
         self.btn_connect.setObjectName("accent_btn")
         self.btn_connect.clicked.connect(self.handle_save)
 
-        # Подключаем сигнал изменения типа БД к обработчику блокировки полей
         self.combo_db_type.currentTextChanged.connect(self.toggle_fields_by_db_type)
 
         if self.edit_title:
             self.lbl_header.setText("<h3>Изменение параметров соединения</h3>")
             self.load_existing_data()
         else:
-            # Вызываем триггер вручную при создании нового окна, чтобы применить логику для дефолтного значения
             self.toggle_fields_by_db_type(self.combo_db_type.currentText())
 
     def toggle_fields_by_db_type(self, db_type: str):
         """Динамически блокирует сетевые поля, если выбрана SQLite."""
         is_sqlite = (db_type == "SQLite")
 
-        # Если SQLite — выключаем поля, если PostgreSQL — включаем
         self.host_input.setDisabled(is_sqlite)
         self.port_input.setDisabled(is_sqlite)
         self.user_input.setDisabled(is_sqlite)
 
-        # Очищаем заблокированные поля для аккуратности
         if is_sqlite:
             self.host_input.clear()
             self.port_input.clear()

@@ -1,5 +1,4 @@
-import sys
-import traceback
+import sys, os, traceback
 from PyQt6.QtWidgets import QApplication, QMessageBox
 from src.views.main_window import MainWindow
 from src.views.auth_window import AuthDialog, RegDialog
@@ -13,10 +12,7 @@ def log_uncaught_exceptions(ex_type, ex_value, ex_traceback):
     QMessageBox.critical(None, "Критическая ошибка", f"Приложение упало:\n{ex_value}")
     sys.exit(1)
 
-
-# Регистрируем логер ошибок
 sys.excepthook = log_uncaught_exceptions
-
 
 def show_auth_flow(main_window, db_adapter):
     """Управляет циклом переключения окон авторизации и размытием заднего плана."""
@@ -37,7 +33,6 @@ def show_auth_flow(main_window, db_adapter):
         result = auth_dialog.exec()
 
         if result == AuthDialog.DialogCode.Accepted:
-            # Передаем управление локальной БД главному окну только ПОСЛЕ успешного входа
             main_window.init_database_behavior(db_adapter)
             break
 
@@ -54,22 +49,21 @@ def show_auth_flow(main_window, db_adapter):
 def main():
     app = QApplication(sys.argv)
 
-    # Загрузка внешней изолированной таблицы стилей QSS
     try:
-        with open("src/views/styles.qss", "r", encoding="utf-8") as f:
+        base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+        qss_path = os.path.join(base_path, "src", "views", "styles.qss")
+
+        with open(qss_path, "r", encoding="utf-8") as f:
             app.setStyleSheet(f.read())
     except FileNotFoundError:
-        print("Предупреждение: Файл styles.qss не найден.")
+        print(f"Предупреждение: Файл styles.qss не найден по пути {qss_path}")
 
-    # Запуск локальной базы для хранения сессий авторизации и профилей
     db_adapter = SQLiteAdapter("app_internal.db")
     db_adapter.connect()
 
-    # Инициализация интерфейса
     main_window = MainWindow()
     main_window.show()
 
-    # Запуск блокирующего модального флоу
     show_auth_flow(main_window, db_adapter)
 
     sys.exit(app.exec())

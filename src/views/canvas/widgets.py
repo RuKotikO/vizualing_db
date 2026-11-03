@@ -33,7 +33,6 @@ class TableCardWidget(QGraphicsRectItem):
         current_y = self.header_height
         for field in self.metadata.fields:
             if field.name.lower() == field_name.lower():
-                # Находим центр текущей строки по вертикали внутри карточки
                 center_y_in_card = current_y + (self.row_height / 2)
                 return {
                     "left": self.scenePos() + QPointF(0, center_y_in_card),
@@ -41,7 +40,6 @@ class TableCardWidget(QGraphicsRectItem):
                 }
             current_y += self.row_height
 
-        # Если поле по какой-то причине не найдено — подвязываемся к центру первой строки под шапкой
         fallback_y = self.header_height + (self.row_height / 2)
         return {
             "left": self.scenePos() + QPointF(0, fallback_y),
@@ -78,7 +76,6 @@ class TableCardWidget(QGraphicsRectItem):
                 painter.drawLine(int(card_rect.x()), int(current_y), int(card_rect.x() + card_rect.width()),
                                  int(current_y))
 
-            # ИСПРАВЛЕНО: Сдвинули текст левее (отступ 12px), так как чекбоксов больше нет
             text_x_offset = 12
             if field.is_pk:
                 painter.setPen(QColor("#EAB308"))
