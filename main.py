@@ -1,5 +1,6 @@
 import sys, os, traceback
 from PyQt6.QtWidgets import QApplication, QMessageBox
+from PyQt6.QtCore import QStandardPaths
 from src.views.main_window import MainWindow
 from src.views.auth_window import AuthDialog, RegDialog
 from src.models.sqlite_adapter import SQLiteAdapter
@@ -70,6 +71,9 @@ def show_auth_flow(main_window, db_adapter):
 def main():
     app = QApplication(sys.argv)
 
+    app.setApplicationName("db")
+    app.setOrganizationName("DBSchemaVisualizer")
+
     try:
         base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
         qss_path = os.path.join(base_path, "src", "views", "styles.qss")
@@ -79,7 +83,13 @@ def main():
     except FileNotFoundError:
         print(f"Предупреждение: Файл styles.qss не найден по пути {qss_path}")
 
-    db_adapter = SQLiteAdapter("app_internal.db")
+    app_data_dir = QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppDataLocation)
+    if not os.path.exists(app_data_dir):
+        os.makedirs(app_data_dir, exist_ok=True)
+    internal_db_path = os.path.join(app_data_dir, "app_internal.db")
+    print(f"Служебная конфигурация запущена по пути: {internal_db_path}")
+
+    db_adapter = SQLiteAdapter(internal_db_path)
     db_adapter.connect()
 
     main_window = MainWindow()
