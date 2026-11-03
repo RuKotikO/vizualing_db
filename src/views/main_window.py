@@ -263,21 +263,32 @@ class MainWindow(QMainWindow):
         self.history_list.clear()
         self.saved_list.clear()
 
-        all_profiles = self.db_adapter.get_connection_profiles(user_id=1)
-        for p in all_profiles:
-            p_id, title, host, port, db_name = p
-            self.history_list.addItem(f"🔌 {title} ({host}:{port})")
+        query_all = "SELECT id, title, host, port, db_name, db_type FROM connections WHERE user_id = 1;"
+        all_profiles = self.db_adapter.execute_query(query_all)
 
-        saved_query = "SELECT title FROM connections WHERE user_id = ? AND save_password = 1;"
+        for p in all_profiles:
+            p_id, title, host, port, db_name, db_type = p
+            icon = "🐘 [PG]" if db_type == "PostgreSQL" else "🗄️ [Lite]"
+
+            if db_type == "SQLite":
+                self.history_list.addItem(f"{icon} {title} (Локальный файл)")
+            else:
+                self.history_list.addItem(f"{icon} {title} ({host}:{port})")
+
+        saved_query = "SELECT title, db_type FROM connections WHERE user_id = ? AND save_password = 1;"
         saved_profiles = self.db_adapter.execute_query(saved_query, (1,))
+
         for row in saved_profiles:
-            self.saved_list.addItem(row[0])
+            title, db_type = row
+            icon = "🐘 [PG]" if db_type == "PostgreSQL" else "🗄️ [Lite]"
+            self.saved_list.addItem(f"{icon} {title}")
 
     def handle_history_item_clicked(self, item):
         """Безопасное извлечение параметров и динамическое подключение к СУБД."""
         text = item.text()
 
-        clean_text = text.replace("🔌 ", "").strip()
+        clean_text = text.replace("🐘 [PG] ", "").replace("🗄️ [Lite] ", "").strip()
+
         if "(" in clean_text:
             title = clean_text.split("(")[0].strip()
         else:
@@ -310,6 +321,8 @@ class MainWindow(QMainWindow):
         db_type, host, port, db_name, db_user = row
 
         if db_type == "SQLite":
+            db_name = db_name.strip("'\"")
+
             self.lbl_connection_status.setText(f"Открытие локального файла базы данных: {db_name}...")
             self.lbl_connection_status.repaint()
 
@@ -317,7 +330,8 @@ class MainWindow(QMainWindow):
                 try:
                     dropdown_dir = os.path.dirname(db_name)
                     if dropdown_dir and not os.path.exists(dropdown_dir):
-                        raise FileNotFoundError(f"Каталог {dropdown_dir} не существует.")
+                        os.makedirs(dropdown_dir,
+                                    exist_ok=True)
                     with open(db_name, 'w') as f:
                         pass
                 except Exception as e:
@@ -325,6 +339,7 @@ class MainWindow(QMainWindow):
                     return
 
             success = self.controller.connect_to_database(db_type="SQLite", database=db_name)
+
         else:
             self.lbl_connection_status.setText(f"Установка сетевого соединения с {host}:{port}...")
             self.lbl_connection_status.repaint()
@@ -439,7 +454,9 @@ class MainWindow(QMainWindow):
             return
 
         text = current_item.text()
-        clean_text = text.replace("🔌 ", "").strip()
+
+        clean_text = text.replace("🐘 [PG] ", "").replace("🗄️ [Lite] ", "").strip()
+
         bracket_index = clean_text.find(" (")
         title = clean_text[:bracket_index].strip() if bracket_index != -1 else clean_text.strip()
 

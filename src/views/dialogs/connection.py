@@ -96,8 +96,10 @@ class NewConnectionDialog(QDialog):
             self.db_name_input.setText(db_name)
             self.user_input.setText(db_user)
             self.cb_save_connection.setChecked(bool(save_pwd))
-            # Принудительно обновляем состояние полей после загрузки данных
             self.toggle_fields_by_db_type(db_type)
+        else:
+            QMessageBox.critical(self, "Ошибка загрузки",
+                                 f"Не удалось найти профиль с именем '{self.edit_title}' в локальной базе конфигураций!")
 
     def handle_save(self):
         t = self.title_input.text().strip()
@@ -106,6 +108,9 @@ class NewConnectionDialog(QDialog):
         p = self.port_input.text().strip()
         n = self.db_name_input.text().strip()
         u = self.user_input.text().strip()
+
+        if db_type == "SQLite" and n:
+            n = n.strip("'\"")
 
         save_val = 1 if self.cb_save_connection.isChecked() else 0
 

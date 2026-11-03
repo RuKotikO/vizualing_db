@@ -104,6 +104,7 @@ class QueryParamsDialog(QDialog):
     def handle_table_changed(self, table_name):
         self.combo_fields.clear()
         self.combo_fields.addItem("[Не выводить]")
+        self.combo_fields.addItem("* [Выбрать все поля]") # Добавляем звездочку
         self.combo_filter_col.clear()
         self.combo_filter_col.addItem("[Без фильтра]")
         self.combo_sort.clear()
@@ -132,13 +133,29 @@ class QueryParamsDialog(QDialog):
         limit_val = self.limit_input.text().strip()
 
         if field != "[Не выводить]":
+            actual_field = "*" if field == "* [Выбрать все поля]" else field
+
             if table not in self.query_data["selected_fields"]:
                 self.query_data["selected_fields"][table] = []
-            if field not in self.query_data["selected_fields"][table]:
-                self.query_data["selected_fields"][table].append(field)
-                msg = f"➕ Вывести: {table}.{field}"
-                self.rules_list.addItem(msg)
-                self.query_data["raw_rules_text"].append(msg)
+
+            if actual_field == "*":
+                self.query_data["selected_fields"][table] = ["*"]
+                items_to_remove = [self.rules_list.item(i) for i in range(self.rules_list.count())
+                                   if self.rules_list.item(i).text().startswith(f"➕ Вывести: {table}.")]
+                for item in items_to_remove:
+                    self.rules_list.takeItem(self.rules_list.row(item))
+                    if item.text() in self.query_data["raw_rules_text"]:
+                        self.query_data["raw_rules_text"].remove(item.text())
+            else:
+                if "*" in self.query_data["selected_fields"][table]:
+                    return
+                if actual_field in self.query_data["selected_fields"][table]:
+                    return
+                self.query_data["selected_fields"][table].append(actual_field)
+
+            msg = f"➕ Вывести: {table}.{actual_field}"
+            self.rules_list.addItem(msg)
+            self.query_data["raw_rules_text"].append(msg)
 
         if filter_col != "[Без фильтра]" and filter_val:
             val_formatted = f"'{filter_val}'" if not filter_val.isdigit() else filter_val

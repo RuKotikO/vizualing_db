@@ -14,6 +14,7 @@ def log_uncaught_exceptions(ex_type, ex_value, ex_traceback):
 
 sys.excepthook = log_uncaught_exceptions
 
+
 def show_auth_flow(main_window, db_adapter):
     """Управляет циклом переключения окон авторизации и размытием заднего плана."""
     from PyQt6.QtWidgets import QGraphicsBlurEffect
@@ -22,26 +23,46 @@ def show_auth_flow(main_window, db_adapter):
     blur_effect.setBlurRadius(15)
     main_window.centralWidget().setGraphicsEffect(blur_effect)
 
+    auth_dialog = AuthDialog(db_adapter, main_window)
+    reg_dialog = RegDialog(db_adapter, main_window)
+
+    GO_TO_REG = 10
+    GO_TO_AUTH = 11
+
+    auth_dialog.btn_to_reg.clicked.connect(lambda: auth_dialog.done(GO_TO_REG))
+    reg_dialog.btn_to_auth.clicked.connect(lambda: reg_dialog.done(GO_TO_AUTH))
+
+    current_window = "auth"
+
     while True:
-        auth_dialog = AuthDialog(db_adapter, main_window)
-        reg_dialog = RegDialog(db_adapter, main_window)
+        if current_window == "auth":
+            result = auth_dialog.exec()
 
-        auth_dialog.btn_to_reg.clicked.connect(auth_dialog.reject)
-        auth_dialog.btn_to_reg.clicked.connect(reg_dialog.exec)
-        reg_dialog.btn_to_auth.clicked.connect(reg_dialog.reject)
+            if result == AuthDialog.DialogCode.Accepted:
+                main_window.init_database_behavior(db_adapter)
+                break
 
-        result = auth_dialog.exec()
+            elif result == GO_TO_REG:
+                current_window = "reg"
+                continue
 
-        if result == AuthDialog.DialogCode.Accepted:
-            main_window.init_database_behavior(db_adapter)
-            break
+            else:
+                db_adapter.disconnect()
+                sys.exit(0)
 
-        if reg_dialog.result() == RegDialog.DialogCode.Accepted:
-            continue
+        elif current_window == "reg":
+            result = reg_dialog.exec()
 
-        if auth_dialog.result() == AuthDialog.DialogCode.Rejected and not reg_dialog.isVisible():
-            db_adapter.disconnect()
-            sys.exit(0)
+            if result == RegDialog.DialogCode.Accepted:
+                current_window = "auth"
+                continue
+
+            elif result == GO_TO_AUTH:
+                current_window = "auth"
+                continue
+            else:
+                current_window = "auth"
+                continue
 
     main_window.centralWidget().setGraphicsEffect(None)
 
