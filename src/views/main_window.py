@@ -405,7 +405,7 @@ class MainWindow(QMainWindow):
         elif self.saved_list.currentItem() is not None:
             active_list = self.saved_list
 
-        if not active_list:
+        if not active_list or active_list.currentItem() is None:
             QMessageBox.warning(self, "Внимание",
                                 "Выберите профиль подключения из списка Истории или Сохранённых для удаления!")
             return
@@ -413,7 +413,7 @@ class MainWindow(QMainWindow):
         current_item = active_list.currentItem()
         text = current_item.text()
 
-        clean_text = text.replace("🔌 ", "").strip()
+        clean_text = text.replace("🐘 [PG] ", "").replace("🗄️ [Lite] ", "").replace("🔌 ", "").strip()
         if "(" in clean_text:
             title = clean_text.split("(")[0].strip()
         else:
@@ -441,6 +441,9 @@ class MainWindow(QMainWindow):
 
                 self.history_list.clearSelection()
                 self.saved_list.clearSelection()
+                self.history_list.setCurrentItem(None)
+                self.saved_list.setCurrentItem(None)
+
                 self.refresh_connection_history()
 
                 QMessageBox.information(self, "Успех", f"Профиль '{title}' успешно удален.")

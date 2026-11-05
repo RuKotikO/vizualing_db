@@ -66,6 +66,7 @@ class QueryParamsDialog(QDialog):
 
         main_layout.addLayout(left_panel, stretch=1)
 
+        # Правая часть
         right_panel = QVBoxLayout()
         right_panel.addWidget(QLabel("<b>Данные запроса (Двойной клик — удалить параметр)</b>"))
 
@@ -78,21 +79,21 @@ class QueryParamsDialog(QDialog):
         self.cb_not_condition = QCheckBox("Инвертировать условие (NOT)")
         right_panel.addWidget(self.cb_not_condition)
 
-        self.btn_delete_rule = QPushButton("Удалить выбранный параметр")
-        self.btn_delete_rule.setObjectName("destructive_btn")
-        right_panel.addWidget(self.btn_delete_rule)
-
         self.btn_apply = QPushButton("Применить")
         self.btn_apply.setObjectName("accent_btn")
         right_panel.addWidget(self.btn_apply)
 
         main_layout.addLayout(right_panel, stretch=1)
 
+        # Подключение сигналов
         self.combo_table.currentTextChanged.connect(self.handle_table_changed)
         self.btn_add_rule.clicked.connect(self.handle_add_rule)
-        self.btn_delete_rule.clicked.connect(self.handle_delete_selected)
-        self.rules_list.itemDoubleClicked.connect(self.handle_delete_selected)  # Удаление по двойному клику
+        self.rules_list.itemDoubleClicked.connect(self.handle_delete_selected)
         self.btn_apply.clicked.connect(self.accept)
+
+        # Жесткая блокировка комбобокса, если окно открывается повторно с уже готовыми правилами
+        if self.rules_list.count() > 0:
+            self.combo_table.setEnabled(False)
 
     def set_schema_data(self, schema_metadata):
         self.schema_metadata = schema_metadata
@@ -102,15 +103,43 @@ class QueryParamsDialog(QDialog):
         self.combo_table.addItems(list(schema_metadata.keys()))
 
     def handle_table_changed(self, table_name):
+        if not table_name:
+            return
+
+        if self.rules_list.count() > 0:
+            actual_table = None
+            if self.query_data["selected_fields"]:
+                actual_table = list(self.query_data["selected_fields"].keys())[0]
+            elif self.query_data["raw_rules_text"]:
+                first_rule = self.query_data["raw_rules_text"][0]
+                if "." in first_rule:
+                    parts = first_rule.split(".")
+                    actual_table = parts[0].replace("➕ Вывести: ", "").replace("🔍 Фильтр: ", "").replace("NOT (",
+                                                                                                         "").replace(
+                        "↕️ Сортировка по: ", "").strip()
+
+            if actual_table and table_name != actual_table:
+                self.combo_table.blockSignals(True)
+                self.combo_table.setCurrentText(actual_table)
+                self.combo_table.blockSignals(False)
+
+                QMessageBox.warning(
+                    self,
+                    "Смена таблицы заблокирована",
+                    f"Вы уже настраиваете запрос для таблицы '{actual_table}'.\n"
+                    "Чтобы выбрать другую таблицу, сначала удалите все правила из списка справа."
+                )
+                return
+
         self.combo_fields.clear()
         self.combo_fields.addItem("[Не выводить]")
-        self.combo_fields.addItem("* [Выбрать все поля]") # Добавляем звездочку
+        self.combo_fields.addItem("* [Выбрать все поля]")
         self.combo_filter_col.clear()
         self.combo_filter_col.addItem("[Без фильтра]")
         self.combo_sort.clear()
         self.combo_sort.addItem("[Без сортировки]")
 
-        if not table_name or table_name not in self.schema_metadata:
+        if table_name not in self.schema_metadata:
             return
 
         table_meta = self.schema_metadata[table_name]
@@ -185,6 +214,9 @@ class QueryParamsDialog(QDialog):
             self.query_data["raw_rules_text"].append(msg)
             self.limit_input.clear()
 
+        if self.rules_list.count() > 0:
+            self.combo_table.setEnabled(False)
+
     def handle_delete_selected(self):
         """Интеллектуальное удаление правила из интерфейса и всех внутренних структур Python."""
         current_item = self.rules_list.currentItem()
@@ -198,12 +230,13 @@ class QueryParamsDialog(QDialog):
 
         if text.startswith("➕ Вывести: "):
             clean = text.replace("➕ Вывести: ", "").strip()
-            t_name, f_name = clean.split(".")
-            if t_name in self.query_data["selected_fields"]:
-                if f_name in self.query_data["selected_fields"][t_name]:
-                    self.query_data["selected_fields"][t_name].remove(f_name)
-                if not self.query_data["selected_fields"][t_name]:
-                    del self.query_data["selected_fields"][t_name]
+            if "." in clean:
+                t_name, f_name = clean.split(".", 1)
+                if t_name in self.query_data["selected_fields"]:
+                    if f_name in self.query_data["selected_fields"][t_name]:
+                        self.query_data["selected_fields"][t_name].remove(f_name)
+                    if not self.query_data["selected_fields"][t_name]:
+                        del self.query_data["selected_fields"][t_name]
 
         elif text.startswith("🔍 Фильтр: "):
             clean = text.replace("🔍 Фильтр: ", "").strip()
@@ -218,5 +251,10 @@ class QueryParamsDialog(QDialog):
         elif text.startswith("🛑 Лимит строк: "):
             self.query_data["limit"] = None
 
-        # Стираем сам элемент из QListWidget на экране
         self.rules_list.takeItem(self.rules_list.row(current_item))
+
+        if self.rules_list.count() == 0:
+            self.combo_table.setEnabled(True)
+            current_table = self.combo_table.currentText()
+            if current_table:
+                self.handle_table_changed(current_table)
