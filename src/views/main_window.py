@@ -5,7 +5,7 @@ import os
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QHBoxLayout, QVBoxLayout,
     QSplitter, QListWidget, QGraphicsView, QFileDialog,
-    QTextEdit, QPushButton, QLabel, QCheckBox, QLineEdit, QTableView, QMessageBox
+    QTextEdit, QPushButton, QLabel, QCheckBox, QLineEdit, QTableView, QMessageBox, QApplication
 )
 from PyQt6.QtCore import Qt, QRectF
 from PyQt6.QtGui import QStandardItemModel, QStandardItem, QPixmap, QPainter
@@ -55,6 +55,15 @@ class MainWindow(QMainWindow):
         self.btn_disconnect = QPushButton("Отключиться")
         self.btn_delete_conn = QPushButton("Удалить соединение")
         self.btn_delete_conn.setObjectName("destructive_btn")
+
+        self.current_session_user = None
+
+        self.btn_change_password = QPushButton("Сменить пароль")
+        self.btn_logout = QPushButton("Выйти из аккаунта")
+        self.btn_logout.setObjectName("destructive_btn")
+
+        top_layout.addWidget(self.btn_change_password)
+        top_layout.addWidget(self.btn_logout)
 
         top_layout.addWidget(self.btn_change_conn)
         top_layout.addWidget(self.btn_refresh_schema)
@@ -186,48 +195,75 @@ class MainWindow(QMainWindow):
         self.db_adapter = db_adapter
         self.lbl_connection_status.setText("Авторизован в системе. Подключение к сторонней БД отсутствует.")
 
+        try:
+            self.btn_create_conn.clicked.disconnect()
+        except TypeError:
+            pass
         self.btn_create_conn.clicked.connect(self.open_create_connection_dialog)
-        self.refresh_connection_history()
 
+        try:
+            self.history_list.itemClicked.disconnect()
+        except TypeError:
+            pass
         self.history_list.itemClicked.connect(self.handle_history_item_clicked)
+
+        try:
+            self.saved_list.itemClicked.disconnect()
+        except TypeError:
+            pass
         self.saved_list.itemClicked.connect(self.handle_history_item_clicked)
 
-        self.history_list.itemClicked.connect(lambda: self.saved_list.clearSelection())
-        self.saved_list.itemClicked.connect(lambda: self.history_list.clearSelection())
-
+        try:
+            self.btn_disconnect.clicked.disconnect()
+        except TypeError:
+            pass
         self.btn_disconnect.clicked.connect(self.handle_disconnect)
+
+        try:
+            self.btn_refresh_schema.clicked.disconnect()
+        except TypeError:
+            pass
         self.btn_refresh_schema.clicked.connect(self.handle_refresh_schema)
+
+        try:
+            self.btn_delete_conn.clicked.disconnect()
+        except TypeError:
+            pass
         self.btn_delete_conn.clicked.connect(self.handle_delete_connection)
+
+        try:
+            self.btn_change_conn.clicked.disconnect()
+        except TypeError:
+            pass
         self.btn_change_conn.clicked.connect(self.handle_change_connection)
+
+        try:
+            self.btn_change_password.clicked.disconnect()
+        except TypeError:
+            pass
+        self.btn_change_password.clicked.connect(self.handle_change_password)
+
+        try:
+            self.btn_logout.clicked.disconnect()
+        except TypeError:
+            pass
+        self.btn_logout.clicked.connect(self.handle_logout_flow)
+
+        try:
+            self.cb_types.stateChanged.disconnect()
+        except TypeError:
+            pass
+        try:
+            self.cb_links.stateChanged.disconnect()
+        except TypeError:
+            pass
 
         self.cb_types.setChecked(True)
         self.cb_links.setChecked(True)
         self.cb_types.stateChanged.connect(self.handle_toggle_types)
         self.cb_links.stateChanged.connect(self.handle_toggle_links)
 
-    def init_database_behavior(self, db_adapter):
-        """Вызывается строго после успешной авторизации пользователя."""
-        self.db_adapter = db_adapter
-        self.lbl_connection_status.setText("Авторизован в системе. Подключение к сторонней БД отсутствует.")
-
-        self.btn_create_conn.clicked.connect(self.open_create_connection_dialog)
         self.refresh_connection_history()
-
-        self.history_list.itemClicked.connect(self.handle_history_item_clicked)
-        self.saved_list.itemClicked.connect(self.handle_history_item_clicked)
-
-        self.history_list.itemClicked.connect(lambda: self.saved_list.clearSelection())
-        self.saved_list.itemClicked.connect(lambda: self.history_list.clearSelection())
-
-        self.btn_disconnect.clicked.connect(self.handle_disconnect)
-        self.btn_refresh_schema.clicked.connect(self.handle_refresh_schema)
-        self.btn_delete_conn.clicked.connect(self.handle_delete_connection)
-        self.btn_change_conn.clicked.connect(self.handle_change_connection)
-
-        self.cb_types.setChecked(True)
-        self.cb_links.setChecked(True)
-        self.cb_types.stateChanged.connect(self.handle_toggle_types)
-        self.cb_links.stateChanged.connect(self.handle_toggle_links)
 
     def open_create_connection_dialog(self):
         dialog = NewConnectionDialog(self.db_adapter, current_user_id=1, parent=self)
@@ -665,3 +701,34 @@ class MainWindow(QMainWindow):
         except Exception as e:
             QMessageBox.critical(self, "Ошибка выгрузки", f"Не удалось выполнить выгрузку данных в файл:\n{e}")
 
+    def handle_change_password(self):
+        """Открывает диалог смены пароля для текущего пользователя."""
+        from src.views.auth_window import ChangePasswordDialog
+        if not self.current_session_user:
+            return
+
+        dialog = ChangePasswordDialog(self.db_adapter, self.current_session_user, parent=self)
+        dialog.exec()
+
+    def handle_logout_flow(self):
+        """Выполняет разрыв соединений, сброс интерфейса и перезапуск цикла событий."""
+        reply = QMessageBox.question(
+            self, "Выход из аккаунта",
+            "Вы уверены, что хотите выйти из текущего аккаунта?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        if reply == QMessageBox.StandardButton.Yes:
+            if self.controller and self.controller.active_connector:
+                try:
+                    self.handle_disconnect()
+                except Exception:
+                    pass
+
+            self.lbl_connection_status.setText("Ожидание авторизации пользователя...")
+
+            self.history_list.clear()
+            self.saved_list.clear()
+
+            self.current_session_user = None
+
+            QApplication.exit(999)

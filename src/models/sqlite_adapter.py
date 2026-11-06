@@ -201,3 +201,17 @@ class SQLiteAdapter(DatabaseConnector):
             self.log_message("ERROR", f"Не удалось удалить профиль {title}: {e}")
             return False
 
+    def change_user_password(self, username: str, old_password: str, new_password: str) -> bool:
+        """Проверяет старый пароль и, если он верен, устанавливает новый хэшированный пароль."""
+        if not self.authenticate_user(username, old_password):
+            return False
+
+        try:
+            new_pwd_hash = hashlib.sha256(new_password.encode()).hexdigest()
+            self.execute_query(
+                "UPDATE users SET password_hash = ? WHERE user_name = ?;",
+                (new_pwd_hash, username)
+            )
+            return True
+        except sqlite3.Error:
+            return False

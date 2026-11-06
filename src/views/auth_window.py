@@ -45,6 +45,15 @@ class AuthDialog(QDialog):
         else:
             QMessageBox.critical(self, "Ошибка", "Неверный логин или пароль!")
 
+    def handle_login(self):
+        u, p = self.login_input.text().strip(), self.password_input.text()
+        if not u or not p: return
+        if self.db_adapter.authenticate_user(u, p):
+            self.current_user_name = u
+            self.accept()
+        else:
+            QMessageBox.critical(self, "Ошибка", "Неверный логин или пароль!")
+
 
 class RegDialog(QDialog):
     def __init__(self, db_adapter, parent=None):
@@ -116,3 +125,54 @@ class RegDialog(QDialog):
             self.accept()
         else:
             QMessageBox.critical(self, "Ошибка", "Не удалось зарегистрировать пользователя. Попробуйте другое имя.")
+
+class ChangePasswordDialog(QDialog):
+    """Модальное окно для безопасной смены пароля текущего пользователя."""
+    def __init__(self, db_adapter, current_username, parent=None):
+        super().__init__(parent)
+        self.db_adapter = db_adapter
+        self.username = current_username
+        self.setWindowTitle("Смена пароля")
+        self.setFixedSize(350, 250)
+        self.setWindowModality(Qt.WindowModality.ApplicationModal)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(12)
+
+        self.lbl_title = QLabel("Смена пароля")
+        self.lbl_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.lbl_title)
+
+        self.old_password_input = QLineEdit()
+        self.old_password_input.setPlaceholderText("Старый пароль")
+        self.old_password_input.setEchoMode(QLineEdit.EchoMode.Password)
+        layout.addWidget(self.old_password_input)
+
+        self.new_password_input = QLineEdit()
+        self.new_password_input.setPlaceholderText("Новый пароль (от 6 символов)")
+        self.new_password_input.setEchoMode(QLineEdit.EchoMode.Password)
+        layout.addWidget(self.new_password_input)
+
+        self.btn_save = QPushButton("Сохранить изменения")
+        self.btn_save.setObjectName("accent_btn")
+        self.btn_save.clicked.connect(self.handle_change)
+        layout.addWidget(self.btn_save)
+
+    def handle_change(self):
+        old_p = self.old_password_input.text()
+        new_p = self.new_password_input.text()
+
+        if not old_p or not new_p:
+            QMessageBox.warning(self, "Внимание", "Заполните все поля!")
+            return
+
+        if len(new_p) < 6:
+            QMessageBox.warning(self, "Ошибка валидации", "Новый пароль должен быть не менее 6 символов!")
+            return
+
+        if self.db_adapter.change_user_password(self.username, old_p, new_p):
+            QMessageBox.information(self, "Успех", "Пароль успешно изменен!")
+            self.accept()
+        else:
+            QMessageBox.critical(self, "Ошибка", "Неверный старый пароль или сбой базы данных.")

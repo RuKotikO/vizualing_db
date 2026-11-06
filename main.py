@@ -40,25 +40,23 @@ def show_auth_flow(main_window, db_adapter):
             result = auth_dialog.exec()
 
             if result == AuthDialog.DialogCode.Accepted:
+
+                main_window.current_session_user = auth_dialog.current_user_name
                 main_window.init_database_behavior(db_adapter)
                 break
-
             elif result == GO_TO_REG:
                 current_window = "reg"
                 continue
 
             else:
+
                 db_adapter.disconnect()
                 sys.exit(0)
 
         elif current_window == "reg":
             result = reg_dialog.exec()
 
-            if result == RegDialog.DialogCode.Accepted:
-                current_window = "auth"
-                continue
-
-            elif result == GO_TO_AUTH:
+            if result == RegDialog.DialogCode.Accepted or result == GO_TO_AUTH:
                 current_window = "auth"
                 continue
             else:
@@ -66,6 +64,7 @@ def show_auth_flow(main_window, db_adapter):
                 continue
 
     main_window.centralWidget().setGraphicsEffect(None)
+
 
 
 def main():
@@ -95,9 +94,18 @@ def main():
     main_window = MainWindow()
     main_window.show()
 
-    show_auth_flow(main_window, db_adapter)
+    while True:
 
-    sys.exit(app.exec())
+        app.processEvents()
+
+        show_auth_flow(main_window, db_adapter)
+
+        exit_code = app.exec()
+
+        if exit_code == 999:
+            continue
+        else:
+            sys.exit(exit_code)
 
 
 if __name__ == "__main__":

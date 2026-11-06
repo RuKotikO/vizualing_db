@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QDialog, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QLabel, QCheckBox, QComboBox, \
-    QListWidget, QMessageBox
+    QListWidget, QMessageBox, QListWidgetItem
 from PyQt6.QtCore import Qt
 
 
@@ -24,7 +24,6 @@ class QueryParamsDialog(QDialog):
 
         main_layout = QHBoxLayout(self)
 
-        # Левая часть
         left_panel = QVBoxLayout()
         left_panel.setSpacing(10)
         left_panel.addWidget(QLabel("<b>Настройка условий</b>"))
@@ -35,12 +34,10 @@ class QueryParamsDialog(QDialog):
 
         left_panel.addWidget(QLabel("Выводимое поле (SELECT):"))
         self.combo_fields = QComboBox()
-        self.combo_fields.addItem("[Не выводить]")
         left_panel.addWidget(self.combo_fields)
 
         left_panel.addWidget(QLabel("Фильтр по колонке (WHERE):"))
         self.combo_filter_col = QComboBox()
-        self.combo_filter_col.addItem("[Без фильтра]")
         left_panel.addWidget(self.combo_filter_col)
 
         left_panel.addWidget(QLabel("Оператор:"))
@@ -54,7 +51,6 @@ class QueryParamsDialog(QDialog):
 
         left_panel.addWidget(QLabel("Сортировка по полю (ORDER BY):"))
         self.combo_sort = QComboBox()
-        self.combo_sort.addItem("[Без сортировки]")
         left_panel.addWidget(self.combo_sort)
 
         self.limit_input = QLineEdit()
@@ -66,7 +62,6 @@ class QueryParamsDialog(QDialog):
 
         main_layout.addLayout(left_panel, stretch=1)
 
-        # Правая часть
         right_panel = QVBoxLayout()
         right_panel.addWidget(QLabel("<b>Данные запроса (Двойной клик — удалить параметр)</b>"))
 
@@ -74,10 +69,25 @@ class QueryParamsDialog(QDialog):
         right_panel.addWidget(self.rules_list)
 
         for rule_text in self.query_data["raw_rules_text"]:
-            self.rules_list.addItem(rule_text)
+            item = QListWidgetItem(rule_text)
+            if rule_text.startswith("🔍 Фильтр: "):
+                item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+                if "NOT (" in rule_text:
+                    item.setCheckState(Qt.CheckState.Checked)
+                else:
+                    item.setCheckState(Qt.CheckState.Unchecked)
+            self.rules_list.addItem(item)
 
-        self.cb_not_condition = QCheckBox("Инвертировать условие (NOT)")
-        right_panel.addWidget(self.cb_not_condition)
+        bottom_options_layout = QHBoxLayout()
+        bottom_options_layout.addStretch()
+
+        self.btn_clear_all = QPushButton("🗑️")
+        self.btn_clear_all.setToolTip("Очистить все правила")
+        self.btn_clear_all.setFixedSize(30, 30)
+        self.btn_clear_all.setObjectName("destructive_btn")
+        bottom_options_layout.addWidget(self.btn_clear_all)
+
+        right_panel.addLayout(bottom_options_layout)
 
         self.btn_apply = QPushButton("Применить")
         self.btn_apply.setObjectName("accent_btn")
@@ -85,15 +95,12 @@ class QueryParamsDialog(QDialog):
 
         main_layout.addLayout(right_panel, stretch=1)
 
-        # Подключение сигналов
         self.combo_table.currentTextChanged.connect(self.handle_table_changed)
         self.btn_add_rule.clicked.connect(self.handle_add_rule)
         self.rules_list.itemDoubleClicked.connect(self.handle_delete_selected)
+        self.btn_clear_all.clicked.connect(self.handle_clear_all_rules)
+        self.rules_list.itemChanged.connect(self.handle_rule_checkbox_changed)
         self.btn_apply.clicked.connect(self.accept)
-
-        # Жесткая блокировка комбобокса, если окно открывается повторно с уже готовыми правилами
-        if self.rules_list.count() > 0:
-            self.combo_table.setEnabled(False)
 
     def set_schema_data(self, schema_metadata):
         self.schema_metadata = schema_metadata
@@ -106,53 +113,65 @@ class QueryParamsDialog(QDialog):
         if not table_name:
             return
 
-        if self.rules_list.count() > 0:
-            actual_table = None
-            if self.query_data["selected_fields"]:
-                actual_table = list(self.query_data["selected_fields"].keys())[0]
-            elif self.query_data["raw_rules_text"]:
-                first_rule = self.query_data["raw_rules_text"][0]
-                if "." in first_rule:
-                    parts = first_rule.split(".")
-                    actual_table = parts[0].replace("➕ Вывести: ", "").replace("🔍 Фильтр: ", "").replace("NOT (",
-                                                                                                         "").replace(
-                        "↕️ Сортировка по: ", "").strip()
+        actual_table = None
+        if self.query_data["selected_fields"]:
+            actual_table = list(self.query_data["selected_fields"].keys())[0]
+        elif self.query_data["raw_rules_text"]:
+            for rule_text in self.query_data["raw_rules_text"]:
+                for prefix in ["➕ Вывести: ", "🔍 Фильтр: ", "↕️ Сортировка по: "]:
+                    if rule_text.startswith(prefix):
+                        clean_text = rule_text.replace(prefix, "").replace("NOT (", "")
+                        if "." in clean_text:
+                            actual_table = clean_text.split(".")[0].strip()
+                            break
+                if actual_table:
+                    break
 
-            if actual_table and table_name != actual_table:
-                self.combo_table.blockSignals(True)
-                self.combo_table.setCurrentText(actual_table)
-                self.combo_table.blockSignals(False)
+        if actual_table and table_name != actual_table:
+            self.combo_table.blockSignals(True)
+            self.combo_table.setCurrentText(actual_table)
+            self.combo_table.blockSignals(False)
 
-                QMessageBox.warning(
-                    self,
-                    "Смена таблицы заблокирована",
-                    f"Вы уже настраиваете запрос для таблицы '{actual_table}'.\n"
-                    "Чтобы выбрать другую таблицу, сначала удалите все правила из списка справа."
-                )
-                return
+            QMessageBox.warning(
+                self,
+                "Смена таблицы заблокирована",
+                f"Вы уже настраиваете запрос для таблицы '{actual_table}'.\n"
+                "Вы можете добавлять любые новые параметры для неё.\n\n"
+                "Чтобы переключиться на другую таблицу, сначала удалите все правила из списка справа."
+            )
+            return
+
+        self.combo_fields.blockSignals(True)
+        self.combo_filter_col.blockSignals(True)
+        self.combo_sort.blockSignals(True)
 
         self.combo_fields.clear()
         self.combo_fields.addItem("[Не выводить]")
         self.combo_fields.addItem("* [Выбрать все поля]")
+
         self.combo_filter_col.clear()
         self.combo_filter_col.addItem("[Без фильтра]")
+
         self.combo_sort.clear()
         self.combo_sort.addItem("[Без сортировки]")
 
-        if table_name not in self.schema_metadata:
-            return
+        if table_name in self.schema_metadata:
+            table_meta = self.schema_metadata[table_name]
+            field_names = [field.name for field in table_meta.fields]
 
-        table_meta = self.schema_metadata[table_name]
-        field_names = [field.name for field in table_meta.fields]
+            self.combo_fields.addItems(field_names)
+            self.combo_filter_col.addItems(field_names)
+            self.combo_sort.addItems(field_names)
 
-        self.combo_fields.addItems(field_names)
-        self.combo_filter_col.addItems(field_names)
-        self.combo_sort.addItems(field_names)
+        self.combo_fields.blockSignals(False)
+        self.combo_filter_col.blockSignals(False)
+        self.combo_sort.blockSignals(False)
 
     def handle_add_rule(self):
         """Добавляет новое правило в структуру данных и на экран."""
         table = self.combo_table.currentText()
-        if not table: return
+        if not table:
+            return
 
         field = self.combo_fields.currentText()
         filter_col = self.combo_filter_col.currentText()
@@ -160,6 +179,8 @@ class QueryParamsDialog(QDialog):
         filter_val = self.filter_data_input.text().strip()
         sort_col = self.combo_sort.currentText()
         limit_val = self.limit_input.text().strip()
+
+        any_rule_added = False
 
         if field != "[Не выводить]":
             actual_field = "*" if field == "* [Выбрать все поля]" else field
@@ -175,29 +196,41 @@ class QueryParamsDialog(QDialog):
                     self.rules_list.takeItem(self.rules_list.row(item))
                     if item.text() in self.query_data["raw_rules_text"]:
                         self.query_data["raw_rules_text"].remove(item.text())
-            else:
-                if "*" in self.query_data["selected_fields"][table]:
-                    return
-                if actual_field in self.query_data["selected_fields"][table]:
-                    return
-                self.query_data["selected_fields"][table].append(actual_field)
 
-            msg = f"➕ Вывести: {table}.{actual_field}"
-            self.rules_list.addItem(msg)
-            self.query_data["raw_rules_text"].append(msg)
+                msg = f"➕ Вывести: {table}.{actual_field}"
+                self.rules_list.addItem(msg)
+                self.query_data["raw_rules_text"].append(msg)
+                any_rule_added = True
+            else:
+                if "*" not in self.query_data["selected_fields"][table] and actual_field not in \
+                        self.query_data["selected_fields"][table]:
+                    self.query_data["selected_fields"][table].append(actual_field)
+                    msg = f"➕ Вывести: {table}.{actual_field}"
+                    self.rules_list.addItem(msg)
+                    self.query_data["raw_rules_text"].append(msg)
+                    any_rule_added = True
+
+            self.combo_fields.setCurrentIndex(0)
 
         if filter_col != "[Без фильтра]" and filter_val:
             val_formatted = f"'{filter_val}'" if not filter_val.isdigit() else filter_val
             condition = f"{table}.{filter_col} {operator} {val_formatted}"
-            if self.cb_not_condition.isChecked():
-                condition = f"NOT ({condition})"
 
             if condition not in self.query_data["filters"]:
                 self.query_data["filters"].append(condition)
                 msg = f"🔍 Фильтр: {condition}"
-                self.rules_list.addItem(msg)
+
+
+                item = QListWidgetItem(msg)
+                item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+                item.setCheckState(Qt.CheckState.Unchecked)
+
+                self.rules_list.addItem(item)
                 self.query_data["raw_rules_text"].append(msg)
+                any_rule_added = True
+
                 self.filter_data_input.clear()
+                self.combo_filter_col.setCurrentIndex(0)
 
         if sort_col != "[Без сортировки]":
             sort_entry = f"{table}.{sort_col}"
@@ -206,16 +239,36 @@ class QueryParamsDialog(QDialog):
                 msg = f"↕️ Сортировка по: {sort_entry}"
                 self.rules_list.addItem(msg)
                 self.query_data["raw_rules_text"].append(msg)
+                any_rule_added = True
+
+                self.combo_sort.setCurrentIndex(0)
 
         if limit_val and limit_val.isdigit():
+            # Удаляем старый лимит из списка отображения, если он уже был добавлен ранее
+            items_to_remove = [self.rules_list.item(i) for i in range(self.rules_list.count())
+                               if self.rules_list.item(i).text().startswith("🛑 Лимит строк:")]
+            for item in items_to_remove:
+                self.rules_list.takeItem(self.rules_list.row(item))
+                if item.text() in self.query_data["raw_rules_text"]:
+                    self.query_data["raw_rules_text"].remove(item.text())
+
             self.query_data["limit"] = limit_val
             msg = f"🛑 Лимит строк: {limit_val}"
             self.rules_list.addItem(msg)
             self.query_data["raw_rules_text"].append(msg)
+            any_rule_added = True
+
+            # Очищаем поле ввода лимита
             self.limit_input.clear()
 
-        if self.rules_list.count() > 0:
-            self.combo_table.setEnabled(False)
+        # Если ничего не было заполнено, но кнопку нажали — даем подсказку пользователю
+        if not any_rule_added:
+            QMessageBox.information(
+                self, "Пустое правило",
+                "Вы не настроили ни одного параметра.\n\n"
+                "Чтобы добавить правило, выберите поле в SELECT, "
+                "заполните условия фильтра (со значением) или выберите поле сортировки."
+            )
 
     def handle_delete_selected(self):
         """Интеллектуальное удаление правила из интерфейса и всех внутренних структур Python."""
@@ -258,3 +311,75 @@ class QueryParamsDialog(QDialog):
             current_table = self.combo_table.currentText()
             if current_table:
                 self.handle_table_changed(current_table)
+
+    def handle_clear_all_rules(self):
+        """Полностью очищает все правила из интерфейса и внутренних структур данных."""
+        if self.rules_list.count() == 0:
+            return
+
+        reply = QMessageBox.question(
+            self, "Очистка запроса",
+            "Вы уверены, что хотите полностью удалить все добавленные правила и параметры?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+
+        if reply == QMessageBox.StandardButton.Yes:
+            self.rules_list.clear()
+
+            self.query_data["selected_fields"].clear()
+            self.query_data["filters"].clear()
+            self.query_data["sort_fields"].clear()
+            self.query_data["limit"] = None
+            self.query_data["raw_rules_text"].clear()
+
+            current_table = self.combo_table.currentText()
+            if current_table:
+                self.handle_table_changed(current_table)
+
+    def handle_rule_checkbox_changed(self, item):
+        """Динамически инвертирует конкретный фильтр при клике на его галочку."""
+        text = item.text()
+        if not text.startswith("🔍 Фильтр: "):
+            return
+
+        # Извлекаем чистое SQL условие из строки
+        clean_condition = text.replace("🔍 Фильтр: ", "").strip()
+
+        # Блокируем сигналы, чтобы изменение текста не вызвало зацикливание этого же метода
+        self.rules_list.blockSignals(True)
+
+        if item.checkState() == Qt.CheckState.Checked:
+            # Если галочку поставили, а NOT еще нет — добавляем инверсию
+            if not clean_condition.startswith("NOT ("):
+                # Удаляем старое чистое условие из общего списка фильтров билдера
+                if clean_condition in self.query_data["filters"]:
+                    self.query_data["filters"].remove(clean_condition)
+
+                # Собираем новое условие с NOT
+                not_condition = f"NOT ({clean_condition})"
+                self.query_data["filters"].append(not_condition)
+
+                # Обновляем текст на экране и в кэше строк
+                new_text = f"🔍 Фильтр: {not_condition}"
+                if text in self.query_data["raw_rules_text"]:
+                    idx = self.query_data["raw_rules_text"].index(text)
+                    self.query_data["raw_rules_text"][idx] = new_text
+                item.setText(new_text)
+        else:
+            # Если галочку сняли, а NOT присутствует — убираем его
+            if clean_condition.startswith("NOT (") and clean_condition.endswith(")"):
+                if clean_condition in self.query_data["filters"]:
+                    self.query_data["filters"].remove(clean_condition)
+
+                # Извлекаем внутренности из "NOT (условие)"
+                unwrapped_condition = clean_condition[5:-1]
+                self.query_data["filters"].append(unwrapped_condition)
+
+                # Обновляем текст на экране
+                new_text = f"🔍 Фильтр: {unwrapped_condition}"
+                if text in self.query_data["raw_rules_text"]:
+                    idx = self.query_data["raw_rules_text"].index(text)
+                    self.query_data["raw_rules_text"][idx] = new_text
+                item.setText(new_text)
+
+        self.rules_list.blockSignals(False)
